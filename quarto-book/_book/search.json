@@ -114,7 +114,7 @@
     "href": "yrxlsim.html#yaml-specific-rules",
     "title": "2  yrXlsim examples",
     "section": "3.9 §9 YAML-specific rules",
-    "text": "3.9 §9 YAML-specific rules\n\n3.9.1 9.1 Quoted key and multiline formula\nrows: []\ncells:\n  A1: \"Title\"\n  \"B2\": \"=SUM(\\n  A1:A10\\n)\"\n\nYou can open this project in RStudio and use Build → Render Book to generate the HTML. The rendered book will show all YAML blocks above as Excel-like tables.",
+    "text": "3.9 §9 YAML-specific rules\n\n3.9.1 9.1 Quoted key and multiline formula\nrows: []\ncells:\n  A1: \"Title\"\n  \"B2\": \"=SUM(\\n  A1:A10\\n)\"\n\nYou can open this project in RStudio and use Build → Render Book to generate the HTML. The rendered book shows the original YAML source above each Excel-like spreadsheet preview (one code block per example — no repetition).",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]

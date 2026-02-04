@@ -290,4 +290,4 @@ cells:
 
 ---
 
-You can open this project in RStudio and use **Build** → **Render Book** to generate the HTML. The rendered book will show all YAML blocks above as Excel-like tables.
+You can open this project in RStudio and use **Build** → **Render Book** to generate the HTML. The rendered book shows the original YAML source above each Excel-like spreadsheet preview (one code block per example — no repetition).

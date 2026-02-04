@@ -75,6 +75,12 @@
     return row ? row.map(function (c) { return c; }) : [];
   }
 
+  function getRow(grid, row1) {
+    const r = grid[row1 - 1];
+    if (!r) return [];
+    return r.map(function (c) { return c === undefined || c === null ? '' : c; });
+  }
+
   function expandFill(doc) {
     const rows = (doc.rows || []).map(function (r) { return (r || []).map(function (c) { return c == null || c === '' ? '' : String(c); }); });
     const cells = doc.cells || {};
@@ -129,12 +135,21 @@
         const templateCol = colLettersToIndex(colLetter);
         const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(op.toCol) - templateCol) : 0);
         const down = op.down !== undefined ? op.down : (op.toRow !== undefined ? Math.max(0, op.toRow - grid.length) : 0);
-        const maxRow = Math.max(grid.length, grid.length + down);
+        const maxTemplateRow = grid.length;
+        const maxRow = down > 0 ? maxTemplateRow + down : maxTemplateRow;
         for (let c = templateCol; c <= templateCol + right; c++) {
           const dc = c - templateCol;
-          for (let r = 1; r <= maxRow; r++) {
+          for (let r = 1; r <= maxTemplateRow; r++) {
             const val = getCell(grid, r, templateCol);
             setCell(grid, r, c, (val && val.startsWith('=')) ? adjustRefInFormula(val, 0, dc) : (val || ''));
+          }
+          if (down > 0) {
+            const lastRowVal = getCell(grid, maxTemplateRow, templateCol);
+            for (let r = maxTemplateRow + 1; r <= maxRow; r++) {
+              const dr = r - maxTemplateRow;
+              const val = (lastRowVal && lastRowVal.startsWith('=')) ? adjustRefInFormula(lastRowVal, dr, dc) : (lastRowVal || '');
+              setCell(grid, r, c, val);
+            }
           }
         }
         return;
@@ -171,12 +186,6 @@
     });
 
     return grid;
-  }
-
-  function getRow(grid, row1) {
-    const r = grid[row1 - 1];
-    if (!r) return [];
-    return r.map(function (c) { return c === undefined || c === null ? '' : c; });
   }
 
   function usedRange(grid, cells) {
@@ -275,8 +284,13 @@
       if (pre) {
         const wrap = document.createElement('div');
         wrap.className = 'yrxlsim-wrapper';
-        wrap.innerHTML = tableHtml;
-        pre.parentNode.replaceChild(wrap, pre);
+        const tableDiv = document.createElement('div');
+        tableDiv.className = 'yrxlsim-preview';
+        tableDiv.innerHTML = tableHtml;
+        const parent = pre.parentNode;
+        parent.replaceChild(wrap, pre);
+        wrap.appendChild(pre);
+        wrap.appendChild(tableDiv);
       } else {
         block.outerHTML = tableHtml;
       }
@@ -304,9 +318,13 @@
     }
   }
   if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading')
-      document.addEventListener('DOMContentLoaded', run);
-    else
-      run();
+    function scheduleRun() {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+      } else {
+        run();
+      }
+    }
+    scheduleRun();
   }
 })(typeof window !== 'undefined' ? window : this);
