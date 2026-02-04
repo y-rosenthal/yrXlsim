@@ -1,0 +1,7 @@
+rows:
+  - ["Name", "Score"]
+  - ["Alice", "=B2"]
+  - ["Bob", "85"]
+cells:
+  B2: "=RANDBETWEEN(0,100)"
+  D1: "Note"

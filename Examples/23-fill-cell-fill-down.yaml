@@ -1,0 +1,7 @@
+version: "0.0.1"
+cells:
+  A1: "Score"
+  A2: "=RANDBETWEEN(1,100)"
+fill:
+  - from: A2
+    down: 5

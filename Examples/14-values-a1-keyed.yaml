@@ -1,0 +1,4 @@
+rows:
+  - ["=RANDBETWEEN(1,6)"]
+values:
+  A1: 4

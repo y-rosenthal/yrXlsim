@@ -1,0 +1,6 @@
+rows: []
+cells:
+  A1: "Title"
+  B1: "Value"
+  A2: "=RANDBETWEEN(1,100)"
+  B2: "=A2"

@@ -1,0 +1,6 @@
+rows:
+  - ["A", "B", "C"]
+  - ["1", "2", "3"]
+cells:
+  B2: "overridden"
+  D1: "extra"

@@ -1,0 +1,7 @@
+version: "0.0.1"
+cells:
+  A1: "=RANDBETWEEN(1,6)"
+fill:
+  - from: A1
+    down: 3
+    right: 2

@@ -1,0 +1,4 @@
+fill:
+  - from: A1
+    to: C4
+    value: "=RANDBETWEEN(1,6)"

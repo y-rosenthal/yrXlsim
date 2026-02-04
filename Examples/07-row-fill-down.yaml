@@ -1,0 +1,6 @@
+rows:
+  - ["ColA", "ColB"]
+  - ["=A2+1", "=B2*2"]
+fill:
+  - row: 2
+    down: 8

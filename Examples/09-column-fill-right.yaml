@@ -1,0 +1,8 @@
+rows:
+  - ["=A1", "=B1", "=C1"]
+cells:
+  A1: "Header"
+fill:
+  - col: A
+    right: 2
+    down: 3

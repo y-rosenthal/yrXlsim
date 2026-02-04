@@ -1,0 +1,7 @@
+rows:
+  - ["first die", "second die", "Total"]
+  - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
+values:
+  A2: 4
+  B2: 2
+  C2: 6

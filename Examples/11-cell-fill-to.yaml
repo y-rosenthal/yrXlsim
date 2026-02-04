@@ -1,0 +1,5 @@
+cells:
+  C4: "=C4*2"
+fill:
+  - from: C4
+    to: B2

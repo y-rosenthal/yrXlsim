@@ -1,0 +1,6 @@
+cells:
+  A1: "=A1+1"
+fill:
+  - from: A1
+    down: 3
+    right: 2

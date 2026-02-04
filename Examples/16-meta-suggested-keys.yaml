@@ -1,0 +1,8 @@
+version: "0.0.1"
+rows:
+  - ["Roll"]
+  - ["=RANDBETWEEN(1,6)"]
+meta:
+  seed: 42
+  cols: 5
+  defaultColWidth: 12

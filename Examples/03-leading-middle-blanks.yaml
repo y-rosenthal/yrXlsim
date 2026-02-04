@@ -1,0 +1,4 @@
+rows:
+  - ["A", "", "C"]    # B is blank
+  - ["", "B2", ""]    # A and C blank
+  - ["X", "Y"]        # row 3 has two cells; trailing cells are blank

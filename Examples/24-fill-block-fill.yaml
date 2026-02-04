@@ -1,0 +1,5 @@
+version: "0.0.1"
+rows: []
+fill:
+  - range: A1:C4
+    value: "=RANDBETWEEN(1,6)"
