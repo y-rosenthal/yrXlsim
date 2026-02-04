@@ -1,0 +1,20 @@
+---
+title: "Introduction"
+---
+
+# Excel with yrXlsim
+
+This sample Quarto book shows how to embed **yrXlsim** YAML in a document. Any fenced code block with the class `yrxlsim` is parsed and rendered as an Excel-like spreadsheet when the HTML is viewed in a browser.
+
+## How to use
+
+In your `.qmd` file, write a code block and add the `yrxlsim` class. The block below is a live example — it is rendered by JavaScript into the table you see:
+
+```{.yrxlsim}
+version: "0.0.1"
+rows:
+  - ["Label", "Value"]
+  - ["Total", "=A2*2"]
+```
+
+The source for that table is the YAML above (in a block with class `yrxlsim`). The YAML must follow the [yrXlsim sheet format](https://github.com/...) (see YAML-SPEC.md). The next chapter shows more examples.

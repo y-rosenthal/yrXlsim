@@ -1,0 +1,19 @@
+project:
+  type: book
+  output-dir: _book
+  resources: resources
+
+book:
+  title: "Excel with yrXlsim"
+  author: "Your Name"
+  chapters:
+    - index.qmd
+    - yrxlsim.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    include-in-header: resources/header.html
+    css: resources/yrxlsim.css
+    scripts: resources/yrxlsim.js

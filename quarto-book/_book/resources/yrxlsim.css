@@ -1,0 +1,78 @@
+/* yrXlsim — Excel-like sheet styling for rendered YAML tables */
+
+.yrxlsim-wrapper {
+  margin: 1em 0;
+}
+
+.yrxlsim-sheet {
+  overflow-x: auto;
+  border: 1px solid #d4d4d4;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  max-width: 100%;
+}
+
+.yrxlsim-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: "Segoe UI", "Calibri", "Arial", sans-serif;
+  table-layout: fixed;
+  min-width: 120px;
+}
+
+.yrxlsim-table th,
+.yrxlsim-table td {
+  border: 1px solid #d4d4d4;
+  padding: 4px 8px;
+  min-width: 60px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.yrxlsim-corner {
+  width: 28px;
+  min-width: 28px;
+  background: #f2f2f2;
+  border-right: 1px solid #d4d4d4;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.yrxlsim-col-header {
+  background: #f2f2f2;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.yrxlsim-row-header {
+  background: #f2f2f2;
+  font-weight: 600;
+  color: #333;
+  text-align: right;
+  width: 28px;
+  min-width: 28px;
+  border-right: 1px solid #d4d4d4;
+}
+
+.yrxlsim-cell {
+  background: #fff;
+  color: #000;
+}
+
+.yrxlsim-cell.yrxlsim-formula {
+  color: #0066cc;
+  font-style: normal;
+}
+
+.yrxlsim-error {
+  padding: 0.75em 1em;
+  background: #fde8e8;
+  border: 1px solid #e8a0a0;
+  border-radius: 4px;
+  color: #8b0000;
+  font-size: 0.9em;
+}

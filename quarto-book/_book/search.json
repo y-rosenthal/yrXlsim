@@ -1,0 +1,122 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Excel with yrXlsim",
+    "section": "",
+    "text": "1 Excel with yrXlsim\nThis sample Quarto book shows how to embed yrXlsim YAML in a document. Any fenced code block with the class yrxlsim is parsed and rendered as an Excel-like spreadsheet when the HTML is viewed in a browser.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "Excel with yrXlsim",
+    "section": "1.1 How to use",
+    "text": "1.1 How to use\nIn your .qmd file, write a code block and add the yrxlsim class. The block below is a live example — it is rendered by JavaScript into the table you see:\nversion: \"0.0.1\"\nrows:\n  - [\"Label\", \"Value\"]\n  - [\"Total\", \"=A2*2\"]\nThe source for that table is the YAML above (in a block with class yrxlsim). The YAML must follow the yrXlsim sheet format (see YAML-SPEC.md). The next chapter shows more examples.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html",
+    "href": "yrxlsim.html",
+    "title": "2  yrXlsim examples",
+    "section": "",
+    "text": "3 Spreadsheet examples\nAll blocks below are yrXlsim YAML from the spec. They are rendered into Excel-style tables by JavaScript when you build the book to HTML.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#document-structure",
+    "href": "yrxlsim.html#document-structure",
+    "title": "2  yrXlsim examples",
+    "section": "3.1 §1 Document structure",
+    "text": "3.1 §1 Document structure\n\n3.1.1 1.1 Minimal document\nversion: \"0.0.1\"\nrows:\n  - [\"Label\", \"Data\"]\n  - [\"X\", \"=A2\"]\n\n\n3.1.2 1.2 Minimal (rows only) — §11.1\nversion: \"0.0.1\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#rows",
+    "href": "yrxlsim.html#rows",
+    "title": "2  yrXlsim examples",
+    "section": "3.2 §2 Rows",
+    "text": "3.2 §2 Rows\n\n3.2.1 2.1 Cell value types (formula, literal, number, null, empty)\nrows:\n  - [\"=A2+B2\", \"Total\", \"42\", null, \"\"]\n\n\n3.2.2 2.2 Leading or middle blanks\nrows:\n  - [\"A\", \"\", \"C\"]    # B is blank\n  - [\"\", \"B2\", \"\"]    # A and C blank\n  - [\"X\", \"Y\"]        # row 3 has two cells; trailing cells are blank",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#cells-a1-map",
+    "href": "yrxlsim.html#cells-a1-map",
+    "title": "2  yrXlsim examples",
+    "section": "3.3 §3 Cells (A1 map)",
+    "text": "3.3 §3 Cells (A1 map)\n\n3.3.1 3.1 Sparse cells only\nrows: []\ncells:\n  A1: \"Title\"\n  B2: \"=A1\"\n  C3: null\n\n\n3.3.2 3.2 Sparse (cells only) — §11.2\nrows: []\ncells:\n  A1: \"Title\"\n  B1: \"Value\"\n  A2: \"=RANDBETWEEN(1,100)\"\n  B2: \"=A2\"",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#fill-expand",
+    "href": "yrxlsim.html#fill-expand",
+    "title": "2  yrXlsim examples",
+    "section": "3.4 §4 Fill (expand)",
+    "text": "3.4 §4 Fill (expand)\n\n3.4.1 4.1 Block fill (range + value)\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.2 4.2 Block fill (from/to)\nfill:\n  - from: A1\n    to: C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.3 4.3 Row fill down\nrows:\n  - [\"ColA\", \"ColB\"]\n  - [\"=A2+1\", \"=B2*2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.4 4.4 Row fill with toRow/toCol\nrows:\n  - [\"X\", \"Y\"]\nfill:\n  - row: 1\n    toRow: 4\n    toCol: D\n\n\n3.4.5 4.5 Column fill right\nrows:\n  - [\"=A1\", \"=B1\", \"=C1\"]\ncells:\n  A1: \"Header\"\nfill:\n  - col: A\n    right: 2\n    down: 3\n\n\n3.4.6 4.6 Cell fill down + right\ncells:\n  A1: \"=A1+1\"\nfill:\n  - from: A1\n    down: 3\n    right: 2\n\n\n3.4.7 4.7 Cell fill with to\ncells:\n  C4: \"=C4*2\"\nfill:\n  - from: C4\n    to: B2\n\n\n3.4.8 4.8 Fill — row fill down (§11.5)\nversion: \"0.0.1\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.9 4.9 Fill — cell fill down (§11.6)\nversion: \"0.0.1\"\ncells:\n  A1: \"Score\"\n  A2: \"=RANDBETWEEN(1,100)\"\nfill:\n  - from: A2\n    down: 5\n\n\n3.4.10 4.10 Fill — block fill (§11.7)\nversion: \"0.0.1\"\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.11 4.11 Fill — cell fill down + right (§11.8)\nversion: \"0.0.1\"\ncells:\n  A1: \"=RANDBETWEEN(1,6)\"\nfill:\n  - from: A1\n    down: 3\n    right: 2",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#resolution-cells-override-rows",
+    "href": "yrxlsim.html#resolution-cells-override-rows",
+    "title": "2  yrXlsim examples",
+    "section": "3.5 §5 Resolution (cells override rows)",
+    "text": "3.5 §5 Resolution (cells override rows)\n\n3.5.1 5.1 Resolution: cells override rows\nrows:\n  - [\"A\", \"B\", \"C\"]\n  - [\"1\", \"2\", \"3\"]\ncells:\n  B2: \"overridden\"\n  D1: \"extra\"\n\n\n3.5.2 5.2 Hybrid (rows + cells override) — §11.3\nrows:\n  - [\"Name\", \"Score\"]\n  - [\"Alice\", \"=B2\"]\n  - [\"Bob\", \"85\"]\ncells:\n  B2: \"=RANDBETWEEN(0,100)\"\n  D1: \"Note\"",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#used-range",
+    "href": "yrxlsim.html#used-range",
+    "title": "2  yrXlsim examples",
+    "section": "3.6 §6 Used range",
+    "text": "3.6 §6 Used range\n\n3.6.1 6.1 Used range from rows and cells\nrows:\n  - [\"X\", \"Y\"]\n  - [\"a\", \"b\", \"c\"]\ncells:\n  E1: \"far\"",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#values-reproducibility-override",
+    "href": "yrxlsim.html#values-reproducibility-override",
+    "title": "2  yrXlsim examples",
+    "section": "3.7 §7 Values (reproducibility override)",
+    "text": "3.7 §7 Values (reproducibility override)\nNote: The renderer shows FORMULAS view; values override is for VALUES view and is not applied in this display.\n\n3.7.1 7.1 Values — A1-keyed\nrows:\n  - [\"=RANDBETWEEN(1,6)\"]\nvalues:\n  A1: 4\n\n\n3.7.2 7.2 Values — array of rows\nrows:\n  - [\"A\", \"B\"]\n  - [\"=1+1\", \"=A2*2\"]\nvalues:\n  - [null, null]\n  - [2, 4]\n\n\n3.7.3 7.3 Values override (§11.4)\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nvalues:\n  A2: 4\n  B2: 2\n  C2: 6",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#meta",
+    "href": "yrxlsim.html#meta",
+    "title": "2  yrXlsim examples",
+    "section": "3.8 §8 Meta",
+    "text": "3.8 §8 Meta\n\n3.8.1 8.1 Meta with suggested keys\nversion: \"0.0.1\"\nrows:\n  - [\"Roll\"]\n  - [\"=RANDBETWEEN(1,6)\"]\nmeta:\n  seed: 42\n  cols: 5\n  defaultColWidth: 12",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  },
+  {
+    "objectID": "yrxlsim.html#yaml-specific-rules",
+    "href": "yrxlsim.html#yaml-specific-rules",
+    "title": "2  yrXlsim examples",
+    "section": "3.9 §9 YAML-specific rules",
+    "text": "3.9 §9 YAML-specific rules\n\n3.9.1 9.1 Quoted key and multiline formula\nrows: []\ncells:\n  A1: \"Title\"\n  \"B2\": \"=SUM(\\n  A1:A10\\n)\"\n\nYou can open this project in RStudio and use Build → Render Book to generate the HTML. The rendered book will show all YAML blocks above as Excel-like tables.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
+    ]
+  }
+]
