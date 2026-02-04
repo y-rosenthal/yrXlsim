@@ -22,7 +22,7 @@ You can use **rows** (array of rows), **cells** (A1-style map), or both. Fill ru
 Smallest useful example:
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -243,7 +243,7 @@ meta:
 
 ## Version
 
-Set **version** (e.g. `"1.0"`) so processors know which spec rules to use. If you omit it, they typically assume the latest version they support.
+Set **version** (e.g. `"0.0.1"`) so processors know which spec rules to use. If you omit it, they typically assume the latest version they support.
 
 ---
 
@@ -268,6 +268,6 @@ Set **version** (e.g. `"1.0"`) so processors know which spec rules to use. If yo
 | Repeat one cell to a block | `fill` with `from` and `down`/`up`/`right`/`left` or `to` |
 | Freeze evaluated results | `values` (A1 map or array of rows) |
 | Reproducible randoms | `meta.seed` and `values` for the cells to freeze |
-| Spec version | `version: "1.0"` (or your target version) |
+| Spec version | `version: "0.0.1"` (or your target version) |
 
 For exact rules, conformance, and all edge cases, see **YAML-SPEC.md**.

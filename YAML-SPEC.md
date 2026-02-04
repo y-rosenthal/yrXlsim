@@ -1,6 +1,6 @@
 # yrXlsim Spreadsheet Format — YAML Specification
 
-**Version:** 1.0  
+**Version:** 0.0.1  
 **Format name:** yrXlsim sheet format (YAML)  
 **File extension:** `.yaml` or `.yml`
 
@@ -16,7 +16,7 @@ A valid sheet document is a single YAML mapping (object) at the root. All keys a
 
 | Key       | Required | Type   | Description |
 |-----------|----------|--------|--------------|
-| `version` | No      | String | Spec version the document targets (e.g. `"1.0"`). Processors use it to select behavior when the spec changes. If absent, processors SHOULD assume the latest version they support. |
+| `version` | No      | String | Spec version the document targets (e.g. `"0.0.1"`). Processors use it to select behavior when the spec changes. If absent, processors SHOULD assume the latest version they support. |
 | `rows`    | Conditional | Array | List of rows; each row is an array of cell contents. Required unless `cells` is present and non-empty. |
 | `cells`   | No      | Mapping | A1-keyed map of cell contents. Overrides and extends `rows`. |
 | `fill`    | No      | Array  | List of fill (expand) operations: copy a row, column, or cell range with formula references adjusted. See §4. |
@@ -30,7 +30,7 @@ A valid sheet document is a single YAML mapping (object) at the root. All keys a
 **Example (minimal document):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -39,7 +39,7 @@ rows:
 ### 1.2 Version
 
 - **Key:** `version`
-- **Type:** String (e.g. `"1.0"`, `"1.1"`). Recommended format: major.minor.
+- **Type:** String (e.g. `"0.0.1"`, `"0.0.2"`). Recommended format: major.minor.patch.
 - **Semantics:** Indicates which version of this spec the document targets. Processors SHOULD read this key and use it to select behavior (e.g. which features to apply, or whether to warn on unknown version). If absent, processors SHOULD assume the latest version they support. If the version is newer than the processor supports, the processor MAY warn or reject the document; if older, the processor SHOULD interpret the document according to that version’s rules when feasible.
 
 ---
@@ -417,7 +417,7 @@ Processors MUST ignore unknown `meta` keys.
 **Example (meta with suggested keys):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows:
   - ["Roll"]
   - ["=RANDBETWEEN(1,6)"]
@@ -476,7 +476,7 @@ Every example below is labeled with **Example** (or **Example (…)**) so that a
 **Example (minimal, rows only):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
@@ -536,7 +536,7 @@ FORMULAS view: formulas in row 2. VALUES view: 4, 2, 6 in row 2 when `values` is
 **Example (fill, row fill down):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
@@ -552,7 +552,7 @@ Row 2 is the template; fill generates rows 3–10 with formulas adjusted (e.g. r
 **Example (fill, cell fill down):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 cells:
   A1: "Score"
   A2: "=RANDBETWEEN(1,100)"
@@ -568,7 +568,7 @@ Cell A2 is the template; fill generates A3–A7 with the formula adjusted (e.g. 
 **Example (fill, block fill):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 rows: []
 fill:
   - range: A1:C4
@@ -582,7 +582,7 @@ Every cell in A1:C4 gets the same formula; no template, no reference adjustment.
 **Example (fill, cell fill down + right):**
 
 ```yaml
-version: "1.0"
+version: "0.0.1"
 cells:
   A1: "=RANDBETWEEN(1,6)"
 fill:
