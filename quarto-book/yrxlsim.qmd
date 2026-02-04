@@ -1,0 +1,293 @@
+---
+title: "yrXlsim examples"
+---
+
+# Spreadsheet examples
+
+All blocks below are yrXlsim YAML from the spec. They are rendered into Excel-style tables by JavaScript when you build the book to HTML.
+
+## §1 Document structure
+
+### 1.1 Minimal document
+
+```{.yrxlsim}
+version: "0.0.1"
+rows:
+  - ["Label", "Data"]
+  - ["X", "=A2"]
+```
+
+### 1.2 Minimal (rows only) — §11.1
+
+```{.yrxlsim}
+version: "0.0.1"
+rows:
+  - ["first die", "second die", "Total"]
+  - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
+```
+
+## §2 Rows
+
+### 2.1 Cell value types (formula, literal, number, null, empty)
+
+```{.yrxlsim}
+rows:
+  - ["=A2+B2", "Total", "42", null, ""]
+```
+
+### 2.2 Leading or middle blanks
+
+```{.yrxlsim}
+rows:
+  - ["A", "", "C"]    # B is blank
+  - ["", "B2", ""]    # A and C blank
+  - ["X", "Y"]        # row 3 has two cells; trailing cells are blank
+```
+
+## §3 Cells (A1 map)
+
+### 3.1 Sparse cells only
+
+```{.yrxlsim}
+rows: []
+cells:
+  A1: "Title"
+  B2: "=A1"
+  C3: null
+```
+
+### 3.2 Sparse (cells only) — §11.2
+
+```{.yrxlsim}
+rows: []
+cells:
+  A1: "Title"
+  B1: "Value"
+  A2: "=RANDBETWEEN(1,100)"
+  B2: "=A2"
+```
+
+## §4 Fill (expand)
+
+### 4.1 Block fill (range + value)
+
+```{.yrxlsim}
+rows: []
+fill:
+  - range: A1:C4
+    value: "=RANDBETWEEN(1,6)"
+```
+
+### 4.2 Block fill (from/to)
+
+```{.yrxlsim}
+fill:
+  - from: A1
+    to: C4
+    value: "=RANDBETWEEN(1,6)"
+```
+
+### 4.3 Row fill down
+
+```{.yrxlsim}
+rows:
+  - ["ColA", "ColB"]
+  - ["=A2+1", "=B2*2"]
+fill:
+  - row: 2
+    down: 8
+```
+
+### 4.4 Row fill with toRow/toCol
+
+```{.yrxlsim}
+rows:
+  - ["X", "Y"]
+fill:
+  - row: 1
+    toRow: 4
+    toCol: D
+```
+
+### 4.5 Column fill right
+
+```{.yrxlsim}
+rows:
+  - ["=A1", "=B1", "=C1"]
+cells:
+  A1: "Header"
+fill:
+  - col: A
+    right: 2
+    down: 3
+```
+
+### 4.6 Cell fill down + right
+
+```{.yrxlsim}
+cells:
+  A1: "=A1+1"
+fill:
+  - from: A1
+    down: 3
+    right: 2
+```
+
+### 4.7 Cell fill with to
+
+```{.yrxlsim}
+cells:
+  C4: "=C4*2"
+fill:
+  - from: C4
+    to: B2
+```
+
+### 4.8 Fill — row fill down (§11.5)
+
+```{.yrxlsim}
+version: "0.0.1"
+rows:
+  - ["first die", "second die", "Total"]
+  - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
+fill:
+  - row: 2
+    down: 8
+```
+
+### 4.9 Fill — cell fill down (§11.6)
+
+```{.yrxlsim}
+version: "0.0.1"
+cells:
+  A1: "Score"
+  A2: "=RANDBETWEEN(1,100)"
+fill:
+  - from: A2
+    down: 5
+```
+
+### 4.10 Fill — block fill (§11.7)
+
+```{.yrxlsim}
+version: "0.0.1"
+rows: []
+fill:
+  - range: A1:C4
+    value: "=RANDBETWEEN(1,6)"
+```
+
+### 4.11 Fill — cell fill down + right (§11.8)
+
+```{.yrxlsim}
+version: "0.0.1"
+cells:
+  A1: "=RANDBETWEEN(1,6)"
+fill:
+  - from: A1
+    down: 3
+    right: 2
+```
+
+## §5 Resolution (cells override rows)
+
+### 5.1 Resolution: cells override rows
+
+```{.yrxlsim}
+rows:
+  - ["A", "B", "C"]
+  - ["1", "2", "3"]
+cells:
+  B2: "overridden"
+  D1: "extra"
+```
+
+### 5.2 Hybrid (rows + cells override) — §11.3
+
+```{.yrxlsim}
+rows:
+  - ["Name", "Score"]
+  - ["Alice", "=B2"]
+  - ["Bob", "85"]
+cells:
+  B2: "=RANDBETWEEN(0,100)"
+  D1: "Note"
+```
+
+## §6 Used range
+
+### 6.1 Used range from rows and cells
+
+```{.yrxlsim}
+rows:
+  - ["X", "Y"]
+  - ["a", "b", "c"]
+cells:
+  E1: "far"
+```
+
+## §7 Values (reproducibility override)
+
+*Note: The renderer shows FORMULAS view; `values` override is for VALUES view and is not applied in this display.*
+
+### 7.1 Values — A1-keyed
+
+```{.yrxlsim}
+rows:
+  - ["=RANDBETWEEN(1,6)"]
+values:
+  A1: 4
+```
+
+### 7.2 Values — array of rows
+
+```{.yrxlsim}
+rows:
+  - ["A", "B"]
+  - ["=1+1", "=A2*2"]
+values:
+  - [null, null]
+  - [2, 4]
+```
+
+### 7.3 Values override (§11.4)
+
+```{.yrxlsim}
+rows:
+  - ["first die", "second die", "Total"]
+  - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
+values:
+  A2: 4
+  B2: 2
+  C2: 6
+```
+
+## §8 Meta
+
+### 8.1 Meta with suggested keys
+
+```{.yrxlsim}
+version: "0.0.1"
+rows:
+  - ["Roll"]
+  - ["=RANDBETWEEN(1,6)"]
+meta:
+  seed: 42
+  cols: 5
+  defaultColWidth: 12
+```
+
+## §9 YAML-specific rules
+
+### 9.1 Quoted key and multiline formula
+
+```{.yrxlsim}
+rows: []
+cells:
+  A1: "Title"
+  "B2": "=SUM(\n  A1:A10\n)"
+```
+
+---
+
+You can open this project in RStudio and use **Build** → **Render Book** to generate the HTML. The rendered book will show all YAML blocks above as Excel-like tables.
