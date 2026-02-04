@@ -235,11 +235,11 @@ If the effective grid is empty (no rows, no cells, no fill output), the used ran
 
 ## 7. Values (reproducibility override)
 
-### 6.1 Purpose
+### 7.1 Purpose
 
 The `values` key overrides the result of formula evaluation for the VALUES view only. It is used to freeze volatile results (e.g. RANDBETWEEN) for reproducible output (e.g. in published material). FORMULAS view is unaffected and always comes from `rows` and `cells`.
 
-### 6.2 Type and shape
+### 7.2 Type and shape
 
 - **Key:** `values`
 - **Type:** Either:
@@ -248,7 +248,7 @@ The `values` key overrides the result of formula evaluation for the VALUES view 
 
 This spec does not require processors to support both forms; at least the A1-keyed form MUST be supported.
 
-### 6.3 Semantics
+### 7.3 Semantics
 
 - For VALUES view: if a cell has an entry in `values` (by address or by position in the array form), that value is used instead of evaluating the formula (or literal) from `rows`/`cells`.
 - For FORMULAS view: `values` is ignored; display always comes from the effective grid (formula text or literal).
