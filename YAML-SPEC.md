@@ -27,6 +27,15 @@ A valid sheet document is a single YAML mapping (object) at the root. All keys a
 
 **Processing order:** Processors MUST apply **fill expansion** (§4) first, producing an effective grid. **Resolution** (§5) and **used range** (§6) then apply to that effective grid (so `cells` override expanded content, and used range includes filled cells).
 
+**Example (minimal document):**
+
+```yaml
+version: "1.0"
+rows:
+  - ["Label", "Data"]
+  - ["X", "=A2"]
+```
+
 ### 1.2 Version
 
 - **Key:** `version`
@@ -55,6 +64,14 @@ Each element in a row is a **cell value**. Permitted types and meaning:
 
 Numbers and booleans MAY be accepted by processors; they MUST be treated as literals and rendered as their string representation (e.g. `42` → `"42"`). This spec does not require a separate type for numbers; string `"42"` is equivalent for authoring.
 
+**Example (cell value types in a row):**
+
+```yaml
+rows:
+  - ["=A2+B2", "Total", "42", null, ""]
+```
+Formula, literal text, literal number-as-string, blank (null), blank (empty string).
+
 ### 2.3 Trailing blanks
 
 A row MAY have fewer elements than other rows or than the number of columns in the sheet. Missing elements at the end of a row are treated as **blank**. Processors MUST NOT require trailing `""` or `null` for alignment.
@@ -63,7 +80,7 @@ A row MAY have fewer elements than other rows or than the number of columns in t
 
 To represent a blank cell before or between non-blank cells in a row, use `""` or `null` in the row array at the corresponding index.
 
-**Example:**
+**Example (leading or middle blanks):**
 
 ```yaml
 rows:
@@ -95,6 +112,17 @@ The `cells` key allows specifying or overriding cell contents by A1-style addres
 
 Same as §2.2: string (formula if starting with `=`, else literal), or `""` / `null` for blank. Setting a cell to blank in `cells` overrides a value from `rows` for that cell.
 
+**Example (sparse cells only):**
+
+```yaml
+rows: []
+cells:
+  A1: "Title"
+  B2: "=A1"
+  C3: null
+```
+Used range A1:C3; A2, B1, B3, C1, C2 are blank.
+
 ---
 
 ## 4. Fill (expand)
@@ -125,7 +153,25 @@ Fill an entire rectangle with a **single value** (formula or literal). No templa
 
 **Semantics:** Every cell in the rectangle (inclusive) is set to `value`. No parsing or adjustment of references. The block contributes to the used range.
 
-**Example:** `{ range: A1:C4, value: "=RANDBETWEEN(1,6)" }` — all 12 cells get that formula. Or `{ from: A1, to: C4, value: "=RANDBETWEEN(1,6)" }`.
+**Example (block fill — range):**
+
+```yaml
+rows: []
+fill:
+  - range: A1:C4
+    value: "=RANDBETWEEN(1,6)"
+```
+All 12 cells get that formula; no reference adjustment.
+
+**Example (block fill — from/to):**
+
+```yaml
+fill:
+  - from: A1
+    to: C4
+    value: "=RANDBETWEEN(1,6)"
+```
+Same effect as above using `from` and `to`.
 
 #### 4.3.2 Row fill (fill down/up/right/left)
 
@@ -145,7 +191,29 @@ At least one of `down`, `up`, `right`, `left`, `toRow`, or `toCol` MUST be prese
 
 **Semantics:** The template row is taken from the effective grid. Rows: fill from row `row − up` through `row + down` (or through `toRow` if given). Columns: the template row has a column extent (from the data); extend it `right` columns to the right and `left` columns to the left (left only when the template row’s first column is not A). For each target cell, apply (row_delta, col_delta) to relative refs in formulas; literals copy as-is.
 
-**Example:** `{ row: 2, down: 8 }` — template row 2; rows 3–10 get formulas adjusted. `{ row: 1, down: 3, right: 2 }` — row 1 is template; fill down 3 rows and extend each row 2 columns to the right.
+**Example (row fill down):**
+
+```yaml
+rows:
+  - ["ColA", "ColB"]
+  - ["=A2+1", "=B2*2"]
+fill:
+  - row: 2
+    down: 8
+```
+Rows 3–10 get formulas with relative refs adjusted (e.g. row 3: `=A3+1`, `=B3*2`).
+
+**Example (row fill with toRow/toCol):**
+
+```yaml
+rows:
+  - ["X", "Y"]
+fill:
+  - row: 1
+    toRow: 4
+    toCol: D
+```
+Template row 1 extended to rows 2–4 and columns through D.
 
 #### 4.3.3 Column fill (fill right/left/down/up)
 
@@ -162,6 +230,20 @@ Copy one column’s content to other columns and/or extend the column to more ro
 | `toRow`   | No       | Integer | Alternative to `down`: last row to fill (inclusive). |
 
 At least one of `right`, `left`, `down`, `up`, `toCol`, or `toRow` MUST be present and imply a positive extent.
+
+**Example (column fill right):**
+
+```yaml
+rows:
+  - ["=A1", "=B1", "=C1"]
+cells:
+  A1: "Header"
+fill:
+  - col: A
+    right: 2
+    down: 3
+```
+Column A pattern (Header + formula) filled to B, C and down 3 rows; refs adjust.
 
 **Semantics:** The template column is taken from the effective grid. Fill the template column’s pattern to the right/left and extend down/up; for each target cell, apply (row_delta, col_delta) to relative refs in formulas.
 
@@ -182,9 +264,28 @@ At least one of `down`, `up`, `right`, `left`, or `to` MUST be present. If `to` 
 
 **Semantics:** The block is rows `(template_row − up)` through `(template_row + down)`, columns `(template_col − left)` through `(template_col + right)` (column indices). The template cell is included. For each target cell, set content from the template; for **formulas**, add (target_row − template_row) to relative row refs and (target_col − template_col) to relative column refs (negative for up/left). For **literals**, copy as-is.
 
-**Examples:**  
-- `{ from: A1, down: 3, right: 2 }` — block A1:C4 (4 rows, 3 columns). Same formula in every cell if the formula has no relative refs; otherwise refs adjust per cell.  
-- `{ from: C4, up: 2, left: 1 }` — block B2:C4; target cells get formula with negative row/col deltas applied.
+**Example (cell fill down + right):**
+
+```yaml
+cells:
+  A1: "=A1+1"
+fill:
+  - from: A1
+    down: 3
+    right: 2
+```
+Block A1:C4; e.g. B2 gets `=B2+1`, C4 gets `=C4+1` (relative refs adjust).
+
+**Example (cell fill with to):**
+
+```yaml
+cells:
+  C4: "=C4*2"
+fill:
+  - from: C4
+    to: B2
+```
+Block B2:C4; template C4; B2, B3, B4, C2, C3 get formula with refs adjusted (up/left).
 
 ### 4.4 Reference adjustment rules
 
@@ -214,6 +315,18 @@ For any cell address (row R, column C):
 
 Blank in `rows` or `cells` (empty string or null) is still a defined value: the cell is blank. Omission (no key in `cells`, or no element at that index in `rows`) also means blank. So: **cells override rows** (and filled content); within either, presence of `""` or `null` means blank, and omission of trailing elements in a row means blank.
 
+**Example (resolution: cells override rows):**
+
+```yaml
+rows:
+  - ["A", "B", "C"]
+  - ["1", "2", "3"]
+cells:
+  B2: "overridden"
+  D1: "extra"
+```
+B2 shows "overridden" (not "2"); D1 extends the grid. A2, C2, D2 from rows/omission.
+
 ---
 
 ## 6. Used range
@@ -230,6 +343,17 @@ The **used range** is the smallest rectangle that contains every cell that eithe
 - **Used range:** From cell `A1` to the cell at row `maxRow` and column index `maxCol` (convert to letter: 0→A, 1→B, …, 26→AA, etc.).
 
 If the effective grid is empty (no rows, no cells, no fill output), the used range is undefined; processors MAY treat the sheet as empty (no grid) or as a single blank cell at A1.
+
+**Example (used range from rows and cells):**
+
+```yaml
+rows:
+  - ["X", "Y"]
+  - ["a", "b", "c"]
+cells:
+  E1: "far"
+```
+Max row 2 (rows), max column E (index 4 from cells); used range A1:E2.
 
 ---
 
@@ -253,6 +377,28 @@ This spec does not require processors to support both forms; at least the A1-key
 - For VALUES view: if a cell has an entry in `values` (by address or by position in the array form), that value is used instead of evaluating the formula (or literal) from `rows`/`cells`.
 - For FORMULAS view: `values` is ignored; display always comes from the effective grid (formula text or literal).
 
+**Example (values — A1-keyed):**
+
+```yaml
+rows:
+  - ["=RANDBETWEEN(1,6)"]
+values:
+  A1: 4
+```
+FORMULAS view: `=RANDBETWEEN(1,6)`; VALUES view: 4.
+
+**Example (values — array of rows, when supported):**
+
+```yaml
+rows:
+  - ["A", "B"]
+  - ["=1+1", "=A2*2"]
+values:
+  - [null, null]
+  - [2, 4]
+```
+VALUES view row 2 shows 2 and 4 instead of evaluating formulas.
+
 ---
 
 ## 8. Meta
@@ -267,6 +413,20 @@ This spec does not require processors to support both forms; at least the A1-key
 - `defaultColWidth`: integer; hint for column width in character or pixels.
 
 Processors MUST ignore unknown `meta` keys.
+
+**Example (meta with suggested keys):**
+
+```yaml
+version: "1.0"
+rows:
+  - ["Roll"]
+  - ["=RANDBETWEEN(1,6)"]
+meta:
+  seed: 42
+  cols: 5
+  defaultColWidth: 12
+```
+Reproducible dice when seed is used; layout hints for display.
 
 ---
 
@@ -288,6 +448,16 @@ Cell values that contain newlines (e.g. long formulas) MAY use YAML multiline sc
 
 YAML comments (`#`) are allowed anywhere and MUST be ignored by processors.
 
+**Example (quoted key and multiline formula):**
+
+```yaml
+rows: []
+cells:
+  A1: "Title"
+  "B2": "=SUM(\n  A1:A10\n)"
+```
+Quoted `"B2"` is valid; formula in B2 may be written as multiline; after parsing it must start with `=` to be treated as formula.
+
 ---
 
 ## 10. Conformance
@@ -299,7 +469,11 @@ YAML comments (`#`) are allowed anywhere and MUST be ignored by processors.
 
 ## 11. Examples (normative illustration)
 
+Every example below is labeled with **Example** (or **Example (…)**) so that all spec examples can be found easily (e.g. by searching for "Example") and extracted into standalone `.yaml` files for testing or authoring.
+
 ### 11.1 Minimal (rows only)
+
+**Example (minimal, rows only):**
 
 ```yaml
 version: "1.0"
@@ -311,6 +485,8 @@ rows:
 Used range: A1:C2. All cells from rows; no cells block. The `version` key identifies the spec version for processors.
 
 ### 11.2 Sparse (cells only)
+
+**Example (sparse, cells only):**
 
 ```yaml
 rows: []
@@ -324,6 +500,8 @@ cells:
 Used range: A1:B2. Resolution: only `cells` contribute.
 
 ### 11.3 Hybrid (rows + cells override)
+
+**Example (hybrid, rows + cells override):**
 
 ```yaml
 rows:
@@ -339,6 +517,8 @@ B2 is overridden by `cells`. D1 extends the used range to column D. Row 3 has no
 
 ### 11.4 Values override
 
+**Example (values override):**
+
 ```yaml
 rows:
   - ["first die", "second die", "Total"]
@@ -352,6 +532,8 @@ values:
 FORMULAS view: formulas in row 2. VALUES view: 4, 2, 6 in row 2 when `values` is applied.
 
 ### 11.5 Fill (row fill down)
+
+**Example (fill, row fill down):**
 
 ```yaml
 version: "1.0"
@@ -367,6 +549,8 @@ Row 2 is the template; fill generates rows 3–10 with formulas adjusted (e.g. r
 
 ### 11.6 Fill (cell fill down)
 
+**Example (fill, cell fill down):**
+
 ```yaml
 version: "1.0"
 cells:
@@ -381,6 +565,8 @@ Cell A2 is the template; fill generates A3–A7 with the formula adjusted (e.g. 
 
 ### 11.7 Block fill (range + value)
 
+**Example (fill, block fill):**
+
 ```yaml
 version: "1.0"
 rows: []
@@ -392,6 +578,8 @@ fill:
 Every cell in A1:C4 gets the same formula; no template, no reference adjustment. Used range: A1:C4. This is the most concise way to express “same formula in every cell of a rectangle.”
 
 ### 11.8 Cell fill (down + right)
+
+**Example (fill, cell fill down + right):**
 
 ```yaml
 version: "1.0"
