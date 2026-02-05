@@ -1,22 +1,42 @@
 /* yrXlsim — Excel-like sheet styling for rendered YAML tables */
 
 .yrxlsim-wrapper {
-  margin: 1em 0;
+  margin: 1.5em 0;
+}
+
+.yrxlsim-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.25em;
+}
+
+.yrxlsim-wrapper .yrxlsim-label-yaml {
+  margin-bottom: 0.2em;
 }
 
 .yrxlsim-wrapper pre {
-  margin: 0 0 0.5em 0;
+  margin: 0 0 0.75em 0;
   border: 1px solid #e0e0e0;
   border-radius: 2px;
   background: #fafafa;
 }
 
 .yrxlsim-wrapper .yrxlsim-preview {
-  margin-top: 0.5em;
+  margin-top: 0.75em;
 }
 
-.yrxlsim-wrapper .yrxlsim-preview::before {
-  content: "Spreadsheet preview";
+.yrxlsim-wrapper .yrxlsim-preview-formulas::before {
+  content: "Formulas";
+  display: block;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.25em;
+}
+
+.yrxlsim-wrapper .yrxlsim-preview-values::before {
+  content: "Values";
   display: block;
   font-size: 0.85em;
   font-weight: 600;

@@ -70,6 +70,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <script>window.jsyaml = window.jsyaml || window.YAML;</script>
+<script src="https://cdn.jsdelivr.net/npm/hyperformula@3.1.1/dist/hyperformula.min.js"></script>
 <script src="resources/yrxlsim.js"></script>
 
 
@@ -214,7 +215,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="spreadsheet-examples" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Spreadsheet examples</h1>
-<p>All blocks below are yrXlsim YAML from the spec. They are rendered into Excel-style tables by JavaScript when you build the book to HTML.</p>
+<p>All blocks below are yrXlsim YAML from the spec. For each example the book shows three things: the <strong>YAML</strong> source, the <strong>Formulas</strong> view of the spreadsheet (cell formulas and literals), and the <strong>Values</strong> view (evaluated results). Formulas are evaluated in the browser using <a href="https://hyperformula.handsontable.com/">HyperFormula</a>; when the YAML includes a <code>values</code> override or <code>meta.seed</code>, those are used for reproducible Values view.</p>
 <section id="document-structure" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="document-structure"><span class="header-section-number">3.1</span> §1 Document structure</h2>
 <section id="minimal-document" class="level3" data-number="3.1.1">
@@ -403,7 +404,7 @@ cells:
 </section>
 <section id="values-reproducibility-override" class="level2" data-number="3.7">
 <h2 data-number="3.7" class="anchored" data-anchor-id="values-reproducibility-override"><span class="header-section-number">3.7</span> §7 Values (reproducibility override)</h2>
-<p><em>Note: The renderer shows FORMULAS view; <code>values</code> override is for VALUES view and is not applied in this display.</em></p>
+<p>The <strong>Values</strong> view below each example uses the YAML <code>values</code> override when present; otherwise formulas are evaluated in the browser.</p>
 <section id="values-a1-keyed" class="level3" data-number="3.7.1">
 <h3 data-number="3.7.1" class="anchored" data-anchor-id="values-a1-keyed"><span class="header-section-number">3.7.1</span> 7.1 Values — A1-keyed</h3>
 <pre class="yrxlsim"><code>rows:
@@ -454,7 +455,7 @@ cells:
   A1: "Title"
   "B2": "=SUM(\n  A1:A10\n)"</code></pre>
 <hr>
-<p>You can open this project in RStudio and use <strong>Build</strong> → <strong>Render Book</strong> to generate the HTML. The rendered book shows the original YAML source above each Excel-like spreadsheet preview (one code block per example — no repetition).</p>
+<p>You can open this project in RStudio and use <strong>Build</strong> → <strong>Render Book</strong> to generate the HTML. The rendered book shows for each example: the YAML source, the Formulas view, and the Values view.</p>
 
 
 </section>

@@ -24,7 +24,7 @@
     "href": "yrxlsim.html",
     "title": "2  yrXlsim examples",
     "section": "",
-    "text": "3 Spreadsheet examples\nAll blocks below are yrXlsim YAML from the spec. They are rendered into Excel-style tables by JavaScript when you build the book to HTML.",
+    "text": "3 Spreadsheet examples\nAll blocks below are yrXlsim YAML from the spec. For each example the book shows three things: the YAML source, the Formulas view of the spreadsheet (cell formulas and literals), and the Values view (evaluated results). Formulas are evaluated in the browser using HyperFormula; when the YAML includes a values override or meta.seed, those are used for reproducible Values view.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
@@ -94,7 +94,7 @@
     "href": "yrxlsim.html#values-reproducibility-override",
     "title": "2  yrXlsim examples",
     "section": "3.7 §7 Values (reproducibility override)",
-    "text": "3.7 §7 Values (reproducibility override)\nNote: The renderer shows FORMULAS view; values override is for VALUES view and is not applied in this display.\n\n3.7.1 7.1 Values — A1-keyed\nrows:\n  - [\"=RANDBETWEEN(1,6)\"]\nvalues:\n  A1: 4\n\n\n3.7.2 7.2 Values — array of rows\nrows:\n  - [\"A\", \"B\"]\n  - [\"=1+1\", \"=A2*2\"]\nvalues:\n  - [null, null]\n  - [2, 4]\n\n\n3.7.3 7.3 Values override (§11.4)\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nvalues:\n  A2: 4\n  B2: 2\n  C2: 6",
+    "text": "3.7 §7 Values (reproducibility override)\nThe Values view below each example uses the YAML values override when present; otherwise formulas are evaluated in the browser.\n\n3.7.1 7.1 Values — A1-keyed\nrows:\n  - [\"=RANDBETWEEN(1,6)\"]\nvalues:\n  A1: 4\n\n\n3.7.2 7.2 Values — array of rows\nrows:\n  - [\"A\", \"B\"]\n  - [\"=1+1\", \"=A2*2\"]\nvalues:\n  - [null, null]\n  - [2, 4]\n\n\n3.7.3 7.3 Values override (§11.4)\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nvalues:\n  A2: 4\n  B2: 2\n  C2: 6",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
@@ -114,7 +114,7 @@
     "href": "yrxlsim.html#yaml-specific-rules",
     "title": "2  yrXlsim examples",
     "section": "3.9 §9 YAML-specific rules",
-    "text": "3.9 §9 YAML-specific rules\n\n3.9.1 9.1 Quoted key and multiline formula\nrows: []\ncells:\n  A1: \"Title\"\n  \"B2\": \"=SUM(\\n  A1:A10\\n)\"\n\nYou can open this project in RStudio and use Build → Render Book to generate the HTML. The rendered book shows the original YAML source above each Excel-like spreadsheet preview (one code block per example — no repetition).",
+    "text": "3.9 §9 YAML-specific rules\n\n3.9.1 9.1 Quoted key and multiline formula\nrows: []\ncells:\n  A1: \"Title\"\n  \"B2\": \"=SUM(\\n  A1:A10\\n)\"\n\nYou can open this project in RStudio and use Build → Render Book to generate the HTML. The rendered book shows for each example: the YAML source, the Formulas view, and the Values view.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]

@@ -4,7 +4,7 @@ title: "yrXlsim examples"
 
 # Spreadsheet examples
 
-All blocks below are yrXlsim YAML from the spec. They are rendered into Excel-style tables by JavaScript when you build the book to HTML.
+All blocks below are yrXlsim YAML from the spec. For each example the book shows three things: the **YAML** source, the **Formulas** view of the spreadsheet (cell formulas and literals), and the **Values** view (evaluated results). Formulas are evaluated in the browser using [HyperFormula](https://hyperformula.handsontable.com/); when the YAML includes a `values` override or `meta.seed`, those are used for reproducible Values view.
 
 ## §1 Document structure
 
@@ -228,7 +228,7 @@ cells:
 
 ## §7 Values (reproducibility override)
 
-*Note: The renderer shows FORMULAS view; `values` override is for VALUES view and is not applied in this display.*
+The **Values** view below each example uses the YAML `values` override when present; otherwise formulas are evaluated in the browser.
 
 ### 7.1 Values — A1-keyed
 
@@ -290,4 +290,4 @@ cells:
 
 ---
 
-You can open this project in RStudio and use **Build** → **Render Book** to generate the HTML. The rendered book shows the original YAML source above each Excel-like spreadsheet preview (one code block per example — no repetition).
+You can open this project in RStudio and use **Build** → **Render Book** to generate the HTML. The rendered book shows for each example: the YAML source, the Formulas view, and the Values view.

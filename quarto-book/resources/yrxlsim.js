@@ -223,11 +223,80 @@
     return { grid: grid, maxRow: ur.maxRow, maxCol: ur.maxCol };
   }
 
-  function renderToHtml(doc) {
+  function buildValuesGrid(doc) {
     const effective = buildEffectiveGrid(doc);
     const grid = effective.grid;
     const maxRow = effective.maxRow;
     const maxCol = Math.max(effective.maxCol, 1);
+    const valuesOverride = doc.values;
+    let valuesGrid;
+
+    if (typeof global.HyperFormula !== 'undefined') {
+      try {
+        const seed = (doc.meta && doc.meta.seed != null) ? Number(doc.meta.seed) : undefined;
+        const config = { licenseKey: 'gpl-v3' };
+        if (seed != null && !isNaN(seed)) {
+          config.randomSeed = seed;
+        }
+        const sheetData = [];
+        for (let r = 0; r < maxRow; r++) {
+          const row = [];
+          for (let c = 0; c < maxCol; c++) {
+            const cell = (grid[r] && grid[r][c]) !== undefined && grid[r][c] !== null && grid[r][c] !== '' ? grid[r][c] : '';
+            row.push(typeof cell === 'string' ? cell : String(cell));
+          }
+          sheetData.push(row);
+        }
+        const hf = global.HyperFormula.buildFromArray(sheetData, config);
+        const hfValues = hf.getSheetValues(0);
+        hf.destroy();
+        valuesGrid = [];
+        for (let r = 0; r < maxRow; r++) {
+          const row = [];
+          for (let c = 0; c < maxCol; c++) {
+            const v = (hfValues[r] && hfValues[r][c]) !== undefined ? hfValues[r][c] : '';
+            row.push(v);
+          }
+          valuesGrid.push(row);
+        }
+      } catch (e) {
+        valuesGrid = grid.map(function (row) {
+          return (row || []).map(function (cell) {
+            return (cell != null && String(cell).startsWith('=')) ? '(error)' : (cell == null ? '' : cell);
+          });
+        });
+      }
+    } else {
+      valuesGrid = grid.map(function (row) {
+        return (row || []).map(function (cell) {
+          if (cell == null || cell === '') return '';
+          if (typeof cell === 'string' && cell.startsWith('=')) return '\u2026';
+          return cell;
+        });
+      });
+    }
+
+    if (valuesOverride !== undefined && valuesOverride !== null) {
+      for (let r = 1; r <= maxRow; r++) {
+        for (let c = 0; c < maxCol; c++) {
+          const a1 = colIndexToLetters(c) + r;
+          let v;
+          if (typeof valuesOverride === 'object' && !Array.isArray(valuesOverride) && valuesOverride[a1] !== undefined) {
+            v = valuesOverride[a1];
+          } else if (Array.isArray(valuesOverride) && valuesOverride[r - 1] && valuesOverride[r - 1][c] !== undefined) {
+            v = valuesOverride[r - 1][c];
+          } else {
+            continue;
+          }
+          valuesGrid[r - 1][c] = v;
+        }
+      }
+    }
+
+    return { grid: valuesGrid, maxRow: maxRow, maxCol: maxCol };
+  }
+
+  function renderTableHtml(data, maxRow, maxCol, view) {
     const colHeaders = [];
     for (let c = 0; c < maxCol; c++) colHeaders.push(colIndexToLetters(c));
     let html = '<div class="yrxlsim-sheet"><table class="yrxlsim-table"><thead><tr><th class="yrxlsim-corner"></th>';
@@ -237,12 +306,13 @@
     html += '</tr></thead><tbody>';
     for (let r = 1; r <= maxRow; r++) {
       html += '<tr><th class="yrxlsim-row-header">' + r + '</th>';
-      const row = grid[r - 1] || [];
+      const row = data[r - 1] || [];
       for (let c = 0; c < maxCol; c++) {
-        const val = row[c] === undefined || row[c] === null ? '' : row[c];
-        const isFormula = typeof val === 'string' && val.startsWith('=');
+        const val = row[c];
+        const isFormula = view === 'formulas' && typeof val === 'string' && val.startsWith('=');
         const cls = isFormula ? ' yrxlsim-formula' : '';
-        html += '<td class="yrxlsim-cell' + cls + '">' + escapeHtml(displayValue(val)) + '</td>';
+        const display = (view === 'values' && (val === null || val === undefined)) ? '' : val;
+        html += '<td class="yrxlsim-cell' + cls + '">' + escapeHtml(displayValue(display)) + '</td>';
       }
       html += '</tr>';
     }
@@ -250,8 +320,20 @@
     return html;
   }
 
+  function renderToHtml(doc, view) {
+    view = view || 'formulas';
+    if (view === 'formulas') {
+      const effective = buildEffectiveGrid(doc);
+      return renderTableHtml(effective.grid, effective.maxRow, Math.max(effective.maxCol, 1), 'formulas');
+    }
+    const values = buildValuesGrid(doc);
+    return renderTableHtml(values.grid, values.maxRow, values.maxCol, 'values');
+  }
+
   function displayValue(v) {
     if (v === undefined || v === null || v === '') return '\u00A0';
+    if (typeof v === 'object' && v !== null && typeof v.value !== 'undefined') return String(v.value);
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
     return String(v);
   }
 
@@ -280,19 +362,30 @@
         if (pre) pre.outerHTML = '<div class="yrxlsim-error">YAML did not produce an object.</div>';
         return;
       }
-      const tableHtml = renderToHtml(doc);
+      const formulasHtml = renderToHtml(doc, 'formulas');
+      const valuesHtml = renderToHtml(doc, 'values');
       if (pre) {
         const wrap = document.createElement('div');
         wrap.className = 'yrxlsim-wrapper';
-        const tableDiv = document.createElement('div');
-        tableDiv.className = 'yrxlsim-preview';
-        tableDiv.innerHTML = tableHtml;
+        const yamlLabel = document.createElement('div');
+        yamlLabel.className = 'yrxlsim-label yrxlsim-label-yaml';
+        yamlLabel.textContent = 'YAML';
+        const formulasSection = document.createElement('div');
+        formulasSection.className = 'yrxlsim-preview yrxlsim-preview-formulas';
+        formulasSection.setAttribute('data-label', 'Formulas');
+        formulasSection.innerHTML = formulasHtml;
+        const valuesSection = document.createElement('div');
+        valuesSection.className = 'yrxlsim-preview yrxlsim-preview-values';
+        valuesSection.setAttribute('data-label', 'Values');
+        valuesSection.innerHTML = valuesHtml;
         const parent = pre.parentNode;
         parent.replaceChild(wrap, pre);
+        wrap.appendChild(yamlLabel);
         wrap.appendChild(pre);
-        wrap.appendChild(tableDiv);
+        wrap.appendChild(formulasSection);
+        wrap.appendChild(valuesSection);
       } else {
-        block.outerHTML = tableHtml;
+        block.outerHTML = formulasHtml;
       }
     });
   }
