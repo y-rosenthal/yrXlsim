@@ -231,7 +231,8 @@
     const valuesOverride = doc.values;
     let valuesGrid;
 
-    if (typeof global.HyperFormula !== 'undefined') {
+    var HyperFormula = global.HyperFormula || global.hyperformula;
+    if (typeof HyperFormula !== 'undefined') {
       try {
         const seed = (doc.meta && doc.meta.seed != null) ? Number(doc.meta.seed) : undefined;
         const config = { licenseKey: 'gpl-v3' };
@@ -247,14 +248,17 @@
           }
           sheetData.push(row);
         }
-        const hf = global.HyperFormula.buildFromArray(sheetData, config);
+        const hf = HyperFormula.buildFromArray(sheetData, config);
         const hfValues = hf.getSheetValues(0);
         hf.destroy();
         valuesGrid = [];
         for (let r = 0; r < maxRow; r++) {
           const row = [];
           for (let c = 0; c < maxCol; c++) {
-            const v = (hfValues[r] && hfValues[r][c]) !== undefined ? hfValues[r][c] : '';
+            let v = (hfValues[r] && hfValues[r][c]) !== undefined ? hfValues[r][c] : '';
+            if (v != null && typeof v === 'object' && typeof v.value !== 'undefined') {
+              v = v.value;
+            }
             row.push(v);
           }
           valuesGrid.push(row);
@@ -267,6 +271,9 @@
         });
       }
     } else {
+      if (typeof global.console !== 'undefined' && global.console.warn) {
+        global.console.warn('yrxlsim: HyperFormula not loaded. Values view will show … for formula cells. Include hyperformula.full.min.js before yrxlsim.js.');
+      }
       valuesGrid = grid.map(function (row) {
         return (row || []).map(function (cell) {
           if (cell == null || cell === '') return '';
