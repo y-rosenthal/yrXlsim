@@ -4,6 +4,6 @@
 .Ruserdata
 
 # pkg build output
-# dist/
+dist/
 
 node_modules/
