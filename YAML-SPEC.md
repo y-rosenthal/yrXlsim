@@ -42,6 +42,25 @@ rows:
 - **Type:** String (e.g. `"0.0.1"`, `"0.0.2"`). Recommended format: major.minor.patch.
 - **Semantics:** Indicates which version of this spec the document targets. Processors SHOULD read this key and use it to select behavior (e.g. which features to apply, or whether to warn on unknown version). If absent, processors SHOULD assume the latest version they support. If the version is newer than the processor supports, the processor MAY warn or reject the document; if older, the processor SHOULD interpret the document according to that version’s rules when feasible.
 
+### 1.3 Multi-sheet documents
+
+- **Key:** `sheets`
+- **Type:** Array of sheet documents. Each element is a mapping (object) with the same top-level keys as a single-sheet document (§1.1): `version`, `rows`, `cells`, `fill`, `values`, `meta`.
+- **Semantics:** When present and non-empty, the root document represents **multiple sheets**. Processors MUST render each element in array order (e.g. Sheet 1, Sheet 2, …). When `sheets` is present, the root MUST NOT be interpreted as a single sheet; the root’s other keys (e.g. `rows`) are ignored for rendering unless they are inside each array element.
+- **Single-sheet compatibility:** If the root has no `sheets` key (or `sheets` is absent/empty), the root is treated as one sheet and the document is a **single-sheet** document as described in §1.1.
+
+**Example (multi-sheet):**
+
+```yaml
+sheets:
+  - version: "0.0.1"
+    rows:
+      - ["Label", "Data"]
+      - ["X", "=A2"]
+  - rows:
+      - ["=A1+B1", "Sum"]
+```
+
 ---
 
 ## 2. Rows

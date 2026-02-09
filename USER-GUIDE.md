@@ -6,7 +6,7 @@ This guide explains how to create and edit spreadsheet documents in the **yrXlsi
 
 ## What is this format?
 
-A yrXlsim sheet file is a single YAML document that describes:
+A yrXlsim sheet file is a YAML document that describes one or more sheets. Use a single root object with rows/cells/fill for one sheet, or a root key **`sheets`** (array of sheet objects) for multiple sheets. Each sheet describes:
 
 - **Cells** — text, numbers, or formulas
 - **Fill** — “drag” a row, column, or cell to repeat it (with formulas adjusted)
@@ -271,6 +271,7 @@ Set **version** (e.g. `"0.0.1"`) so processors know which spec rules to use. If 
 | Freeze evaluated results | `values` (A1 map or array of rows) |
 | Reproducible randoms | `meta.seed` and `values` for the cells to freeze |
 | Spec version | `version: "0.0.1"` (or your target version) |
+| Multiple sheets in one file | Top-level `sheets:` array; each element is a sheet object (rows, cells, fill, etc.). |
 
 For exact rules, conformance, and all edge cases, see **YAML-SPEC.md**.
 

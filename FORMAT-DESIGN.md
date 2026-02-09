@@ -71,6 +71,11 @@ Ranges (e.g. `A1:B2`) are reserved for future use (e.g. merged cells or bulk val
 - **Type:** Object.
 - **Possible keys:** `cols` (column count hint), `defaultColWidth`, `seed` (for reproducible volatile functions), etc. Only introduce as needed; not required for the core format.
 
+### 3.5 `sheets` (optional, multi-sheet)
+
+- **Type:** Array of sheet objects. Each element has the same logical schema as above (rows, cells, fill, values, meta).
+- **Role:** When present and non-empty, the document represents multiple sheets; processors render each in order. When absent, the root is a single sheet.
+
 ---
 
 ## 4. Sparsity rules

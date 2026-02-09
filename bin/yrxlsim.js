@@ -37,8 +37,9 @@ DESCRIPTION
   Quarto in-browser renderer, so formula evaluation and behavior match exactly.
 
 INPUT FORMAT (expected YAML)
-  The input file must be a single YAML document describing a yrXlsim sheet.
-  Top-level keys:
+  The input file is a YAML document: either a single sheet (rows, cells, fill,
+  values, meta) or multiple sheets via a top-level "sheets" array of sheet objects.
+  Single-sheet top-level keys:
     rows     List of rows; each row is a list of cell values (formulas or literals).
     cells    Optional A1-keyed map (e.g. A1: "Title", B2: "=A2") for sparse/patch.
     fill     Optional list of expand ops: block (range + value), row, col, or cell fill.
@@ -46,16 +47,25 @@ INPUT FORMAT (expected YAML)
     meta     Optional hints (e.g. seed, cols, defaultColWidth).
   Cell values: string starting with = is a formula; otherwise literal; null or "" = blank.
   At least one of rows, cells, or fill must define at least one cell.
-  Full spec: YAML-SPEC.md and USER-GUIDE.md in the yrXlsim repo.
+  Multi-sheet: use top-level key "sheets:" with an array of sheet objects; each
+  is rendered in sequence. Full spec: YAML-SPEC.md and USER-GUIDE.md in the repo.
 
 USAGE
   ${bin} render <file> [options]
   ${bin} render -                 Read YAML from stdin instead of a file
+  ${bin} -e
+  ${bin} --examples                Output all example sheets as one YAML (to stdout)
+                                   and usage instructions. Pipe to render or save to file.
 
 ARGUMENTS
   <file>    Path to a .yaml or .yml yrXlsim sheet file. Use - to read from stdin.
 
 OPTIONS
+  -e, --examples       Output a single YAML document containing all example sheets
+                       (from the Examples/ directory) to stdout, then print instructions
+                       for piping to "yrxlsim render -" or saving to a file and rendering.
+                       See EXAMPLES below.
+
   --format <format>     Output format (default: ascii)
                         ascii   Print FORMULAS and/or VALUES view as ASCII grid
                         html    Write standalone HTML with bundled CSS
@@ -78,17 +88,25 @@ EXAMPLES
   cat sheet.yaml | ${bin} render -
   ${bin} render - --format ascii -o grid.txt
 
+  # Render all bundled examples (pipe -e output to render):
+  ${bin} -e | ${bin} render -
+  # Save examples to a file, then render:
+  ${bin} --examples > examples.yaml
+  ${bin} render examples.yaml
+
 SEE ALSO
   YAML format: YAML-SPEC.md and USER-GUIDE.md in the yrXlsim repo.
 `;
 }
 
 function parseArgs(argv) {
-  const args = { file: null, format: 'ascii', view: DEFAULT_VIEW, output: null, help: false };
+  const args = { file: null, format: 'ascii', view: DEFAULT_VIEW, output: null, help: false, examples: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '-h' || a === '--help') {
       args.help = true;
+    } else if (a === '-e' || a === '--examples') {
+      args.examples = true;
     } else if (a === '--format' && argv[i + 1]) {
       args.format = argv[++i];
     } else if (a === '--view' && argv[i + 1]) {
@@ -105,9 +123,83 @@ function parseArgs(argv) {
   return args;
 }
 
+/** Read stdin fully (for pipes). fs.readFileSync(process.stdin.fd) can raise EAGAIN on pipes. */
+function readStdin() {
+  return new Promise(function (resolve, reject) {
+    const chunks = [];
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', function (chunk) { chunks.push(chunk); });
+    process.stdin.on('end', function () { resolve(chunks.join('')); });
+    process.stdin.on('error', reject);
+  });
+}
+
 function readYaml(input) {
-  const raw = input === '-' ? fs.readFileSync(process.stdin.fd, 'utf8') : fs.readFileSync(input, 'utf8');
+  const raw = input === '-' ? null : fs.readFileSync(input, 'utf8');
+  if (raw !== null) return global.jsyaml.load(raw);
+  throw new Error('readYaml(-) requires async readStdin; use readYamlFromStdin()');
+}
+
+function readYamlFromStdin(raw) {
   return global.jsyaml.load(raw);
+}
+
+function getExamplesDir() {
+  const candidates = [
+    path.join(__dirname, '..', 'Examples'),
+    path.join(path.dirname(process.execPath || __dirname), '..', 'Examples')
+  ];
+  if (process.pkg) {
+    candidates.unshift(path.join(path.dirname(process.execPath), 'Examples'));
+  }
+  for (const dir of candidates) {
+    try {
+      if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) return dir;
+    } catch (_) {}
+  }
+  return null;
+}
+
+function runExamples() {
+  const bin = path.basename(process.argv[1]);
+  const examplesDir = getExamplesDir();
+  if (!examplesDir) {
+    process.stderr.write('yrxlsim: Examples directory not found. Run from the yrXlsim repo root or install with Examples.\n');
+    process.exit(1);
+  }
+  let files;
+  try {
+    files = fs.readdirSync(examplesDir)
+      .filter(function (f) { return /\.ya?ml$/i.test(f); })
+      .sort();
+  } catch (e) {
+    process.stderr.write('yrxlsim: Cannot read Examples directory: ' + e.message + '\n');
+    process.exit(1);
+  }
+  if (files.length === 0) {
+    process.stderr.write('yrxlsim: No .yaml files in Examples directory.\n');
+    process.exit(1);
+  }
+  const sheets = [];
+  for (let i = 0; i < files.length; i++) {
+    const filePath = path.join(examplesDir, files[i]);
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const doc = global.jsyaml.load(raw);
+      if (doc && typeof doc === 'object') sheets.push(doc);
+    } catch (e) {
+      process.stderr.write('yrxlsim: Skip ' + files[i] + ': ' + e.message + '\n');
+    }
+  }
+  const out = { sheets: sheets };
+  process.stdout.write(global.jsyaml.dump(out, { lineWidth: -1 }));
+  process.stdout.write('\n# --- Instructions ---\n');
+  process.stdout.write('# To render the above YAML to ASCII, pipe it to yrxlsim:\n');
+  process.stdout.write('#   ' + bin + ' -e | ' + bin + ' render -\n');
+  process.stdout.write('# To save to a file and then render:\n');
+  process.stdout.write('#   ' + bin + ' --examples > examples.yaml\n');
+  process.stdout.write('#   ' + bin + ' render examples.yaml\n');
+  process.stdout.write('# (Remove the comment lines above when piping or saving.)\n');
 }
 
 function writeOutput(content, outPath) {
@@ -136,9 +228,18 @@ function getCssPath() {
   return path.join(__dirname, '..', 'quarto-book', 'resources', 'yrxlsim.css');
 }
 
-function buildStandaloneHtml(doc, view) {
-  const formulasHtml = yrxlsim.renderToHtml(doc, 'formulas');
-  const valuesHtml = yrxlsim.renderToHtml(doc, 'values');
+function buildStandaloneHtml(sheets, view) {
+  const sheetArray = Array.isArray(sheets) ? sheets : [sheets];
+  let formulasHtml = '';
+  let valuesHtml = '';
+  for (let i = 0; i < sheetArray.length; i++) {
+    if (sheetArray.length > 1) {
+      formulasHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+      valuesHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+    }
+    formulasHtml += yrxlsim.renderToHtml(sheetArray[i], 'formulas');
+    valuesHtml += yrxlsim.renderToHtml(sheetArray[i], 'values');
+  }
   const cssPath = getCssPath();
   let css = '';
   if (cssPath) {
@@ -161,6 +262,7 @@ function buildStandaloneHtml(doc, view) {
 ${css}
 .yrxlsim-standalone-section { margin: 1.5em 0; }
 .yrxlsim-standalone-section h2 { font-size: 1em; color: #555; margin-bottom: 0.25em; }
+.yrxlsim-sheet-label { font-size: 0.85em; font-weight: 600; color: #666; margin-top: 1em; margin-bottom: 0.25em; }
   </style>
 </head>
 <body>
@@ -173,11 +275,15 @@ ${showValues ? `<div class="yrxlsim-standalone-section"><h2>Values</h2>${valuesH
 
 function main() {
   const argv = process.argv.slice(2);
-  if (argv.length === 0 || (argv[0] !== 'render')) {
-    if (argv.length > 0 && (argv[0] === '-h' || argv[0] === '--help')) {
-      process.stdout.write(usage());
-      process.exit(0);
-    }
+  if (argv.length > 0 && (argv[0] === '-e' || argv[0] === '--examples')) {
+    runExamples();
+    process.exit(0);
+  }
+  if (argv.length > 0 && (argv[0] === '-h' || argv[0] === '--help')) {
+    process.stdout.write(usage());
+    process.exit(0);
+  }
+  if (argv.length === 0 || argv[0] !== 'render') {
     process.stderr.write(usage());
     process.exit(1);
   }
@@ -200,6 +306,45 @@ function main() {
     process.exit(1);
   }
 
+  function doRender(doc) {
+    if (!doc || typeof doc !== 'object') {
+      process.stderr.write('Error: YAML did not produce an object.\n');
+      process.exit(1);
+    }
+    const sheets = yrxlsim.getSheets(doc);
+    let out;
+    if (args.format === 'ascii') {
+      const parts = [];
+      for (let i = 0; i < sheets.length; i++) {
+        if (sheets.length > 1 && i > 0) parts.push('\n--- Sheet ' + (i + 1) + ' ---\n\n');
+        parts.push(yrxlsim.renderToAscii(sheets[i], args.view));
+      }
+      out = parts.join('\n\n');
+    } else {
+      out = buildStandaloneHtml(sheets, args.view);
+    }
+    writeOutput(out, args.output);
+  }
+
+  if (args.file === '-') {
+    readStdin()
+      .then(function (raw) {
+        let doc;
+        try {
+          doc = readYamlFromStdin(raw);
+        } catch (e) {
+          process.stderr.write('Error parsing YAML: ' + e.message + '\n');
+          process.exit(1);
+        }
+        doRender(doc);
+      })
+      .catch(function (e) {
+        process.stderr.write('Error reading stdin: ' + e.message + '\n');
+        process.exit(1);
+      });
+    return;
+  }
+
   let doc;
   try {
     doc = readYaml(args.file);
@@ -207,18 +352,7 @@ function main() {
     process.stderr.write('Error parsing YAML: ' + e.message + '\n');
     process.exit(1);
   }
-  if (!doc || typeof doc !== 'object') {
-    process.stderr.write('Error: YAML did not produce an object.\n');
-    process.exit(1);
-  }
-
-  let out;
-  if (args.format === 'ascii') {
-    out = yrxlsim.renderToAscii(doc, args.view);
-  } else {
-    out = buildStandaloneHtml(doc, args.view);
-  }
-  writeOutput(out, args.output);
+  doRender(doc);
 }
 
 main();

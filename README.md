@@ -62,8 +62,9 @@ rows:
 - **`values`** — Optional override of **evaluated** results (for reproducible Values view, e.g. freezing `RANDBETWEEN`).
 - **`meta`** — Optional hints (e.g. `seed`, `cols`, `defaultColWidth`).
 - **`version`** — Optional spec version (e.g. `"0.0.1"`).
+- **`sheets`** — Optional array of sheet objects for **multiple sheets** in one file; each element has the same keys as above. If present, each sheet is rendered in order.
 
-At least one of `rows`, `cells`, or `fill` must be present and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC.md](YAML-SPEC.md).
+At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sheets`) and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC.md](YAML-SPEC.md).
 
 ---
 
@@ -119,10 +120,14 @@ yrxlsim render sheet.yaml --view formulas
 yrxlsim render sheet.yaml --format html -o sheet.html
 
 # Read YAML from stdin
-cat sheet.yaml | yrxlsim render -
+  cat sheet.yaml | yrxlsim render -
+
+  # Output all example sheets as one multi-sheet YAML (then render or save):
+  yrxlsim -e | yrxlsim render -
+  yrxlsim --examples > examples.yaml && yrxlsim render examples.yaml
 ```
 
-The CLI requires the **same** `quarto-book/resources/yrxlsim.js` core as the Quarto book. See [PRD](PRD.md) and [plan](plan.md) for design.
+The CLI requires the **same** `quarto-book/resources/yrxlsim.js` core as the Quarto book. Input may be a single sheet or multiple sheets (`sheets:` array). See [PRD](PRD.md) and [plan](plan.md) for design.
 
 ---
 

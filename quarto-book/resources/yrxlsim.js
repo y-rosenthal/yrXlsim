@@ -224,6 +224,16 @@
     return { grid: grid, maxRow: ur.maxRow, maxCol: ur.maxCol };
   }
 
+  /**
+   * Return an array of sheet documents. If root has a "sheets" array, return it;
+   * otherwise treat the root as a single sheet and return [root].
+   */
+  function getSheets(doc) {
+    if (!doc || typeof doc !== 'object') return [];
+    if (Array.isArray(doc.sheets) && doc.sheets.length > 0) return doc.sheets;
+    return [doc];
+  }
+
   function buildValuesGrid(doc) {
     const effective = buildEffectiveGrid(doc);
     const grid = effective.grid;
@@ -470,8 +480,17 @@
         if (pre) pre.outerHTML = '<div class="yrxlsim-error">YAML did not produce an object.</div>';
         return;
       }
-      const formulasHtml = renderToHtml(doc, 'formulas');
-      const valuesHtml = renderToHtml(doc, 'values');
+      const sheets = getSheets(doc);
+      let formulasHtml = '';
+      let valuesHtml = '';
+      for (let i = 0; i < sheets.length; i++) {
+        if (sheets.length > 1) {
+          formulasHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+          valuesHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+        }
+        formulasHtml += renderToHtml(sheets[i], 'formulas');
+        valuesHtml += renderToHtml(sheets[i], 'values');
+      }
       if (pre) {
         const wrap = global.document.createElement('div');
         wrap.className = 'yrxlsim-wrapper';
@@ -505,6 +524,7 @@
     parseRange: parseRange,
     buildEffectiveGrid: buildEffectiveGrid,
     buildValuesGrid: buildValuesGrid,
+    getSheets: getSheets,
     renderToHtml: renderToHtml,
     renderToAscii: renderToAscii,
     renderTableAscii: renderTableAscii,
