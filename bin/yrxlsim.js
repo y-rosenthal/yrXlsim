@@ -36,6 +36,18 @@ DESCRIPTION
   Uses the same JavaScript core (quarto-book/resources/yrxlsim.js) as the
   Quarto in-browser renderer, so formula evaluation and behavior match exactly.
 
+INPUT FORMAT (expected YAML)
+  The input file must be a single YAML document describing a yrXlsim sheet.
+  Top-level keys:
+    rows     List of rows; each row is a list of cell values (formulas or literals).
+    cells    Optional A1-keyed map (e.g. A1: "Title", B2: "=A2") for sparse/patch.
+    fill     Optional list of expand ops: block (range + value), row, col, or cell fill.
+    values   Optional override of evaluated results (for reproducible VALUES view).
+    meta     Optional hints (e.g. seed, cols, defaultColWidth).
+  Cell values: string starting with = is a formula; otherwise literal; null or "" = blank.
+  At least one of rows, cells, or fill must define at least one cell.
+  Full spec: YAML-SPEC.md and USER-GUIDE.md in the yrXlsim repo.
+
 USAGE
   ${bin} render <file> [options]
   ${bin} render -                 Read YAML from stdin instead of a file

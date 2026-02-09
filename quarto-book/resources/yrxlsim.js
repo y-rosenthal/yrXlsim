@@ -368,7 +368,17 @@
     return s + Array(width - s.length + 1).join(' ');
   }
 
-  /** Render one grid as ASCII: column letters, row numbers, + - | borders. */
+  /** Center string in width (pad left and right; extra space on right if odd). */
+  function padCenter(str, width) {
+    const s = String(str);
+    if (s.length >= width) return s;
+    const total = width - s.length;
+    const left = Math.floor(total / 2);
+    const right = total - left;
+    return Array(left + 1).join(' ') + s + Array(right + 1).join(' ');
+  }
+
+  /** Render one grid as ASCII: unboxed centered column/row headers; data cells only are boxed. */
   function renderTableAscii(data, maxRow, maxCol, view) {
     const minCellWidth = 2;
     const rowHeaderWidth = Math.max(1, String(maxRow).length);
@@ -386,33 +396,32 @@
     }
 
     const lines = [];
-    function sep() {
-      let s = '+' + Array(rowHeaderWidth + 1).join('-') + '+';
+    // Column headers (unboxed): centered in each column width
+    let headerLine = padCenter('', rowHeaderWidth);
+    for (let c = 0; c < maxCol; c++) {
+      headerLine += padCenter(colIndexToLetters(c), colWidths[c]);
+    }
+    lines.push(headerLine);
+    // Separator for data grid only (after row-header column)
+    function dataSep() {
+      let s = Array(rowHeaderWidth + 1).join(' ') + '+';
       for (let c = 0; c < maxCol; c++) s += Array(colWidths[c] + 1).join('-') + '+';
       lines.push(s);
     }
-    function row(cells, isHeaderRow) {
-      let s = '|' + padRight(cells[0], rowHeaderWidth) + '|';
-      for (let c = 0; c < maxCol; c++) s += padRight(cells[c + 1], colWidths[c]) + '|';
-      lines.push(s);
-    }
-
-    sep();
-    const headerCells = [''];
-    for (let c = 0; c < maxCol; c++) headerCells.push(colIndexToLetters(c));
-    row(headerCells, true);
-    sep();
+    dataSep();
     for (let r = 1; r <= maxRow; r++) {
       const rowData = data[r - 1] || [];
-      const cells = [String(r)];
+      // Row header (unboxed): row number centered in row-header width, then data cells boxed
+      let line = padCenter(String(r), rowHeaderWidth) + ' ';
+      line += '|';
       for (let c = 0; c < maxCol; c++) {
         const val = rowData[c];
         const disp = (view === 'values' && (val === null || val === undefined)) ? '' : displayValue(val);
-        cells.push(disp);
+        line += padRight(disp, colWidths[c]) + '|';
       }
-      row(cells, false);
+      lines.push(line);
     }
-    sep();
+    dataSep();
     return lines.join('\n');
   }
 
