@@ -11,8 +11,8 @@ The spreadsheet format is designed to support:
 - **Human editing** — Authors can create and modify sheets in a text editor. Rows are laid out horizontally (one row per line or array) for quick scanning and editing.
 - **Sparse spreadsheets** — Blank cells need not be specified; only non-empty cells are required. Trailing blanks in a row can be omitted; isolated cells can be specified by address.
 - **Dual rendering** — The same logical structure is the source of truth for:
-  - **ASCII output** (CLI): column letters, row numbers, `+`/`-`/`|` grid; FORMULAS view and VALUES view.
-  - **HTML output**: JavaScript loads the structure (JSON or parsed YAML), builds a grid, and renders to HTML with CSS so it looks like an Excel spreadsheet.
+  - **ASCII output** (CLI): column letters, row numbers, `+`/`-`/`|` grid; FORMULAS view and VALUES view. Produced by the same JavaScript core run under Node (`quarto-book/resources/yrxlsim.js`).
+  - **HTML output**: The same core runs in the browser (Quarto) or is used by the CLI to produce standalone HTML; it builds the grid and renders to HTML with CSS so it looks like an Excel spreadsheet.
 - **One source of truth** — Formulas (and optionally literal values) live in the file. An optional `values` override can freeze specific cell results for reproducible VALUES view (e.g. in published material) without changing formulas.
 
 ---

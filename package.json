@@ -1,0 +1,31 @@
+{
+  "name": "yrxlsim",
+  "version": "0.1.0",
+  "description": "Declarative YAML spreadsheet format with shared JS core for Quarto (HTML) and CLI (ASCII/HTML)",
+  "private": true,
+  "bin": "bin/yrxlsim.js",
+  "scripts": {
+    "render:ascii": "node bin/yrxlsim.js render --format ascii",
+    "render:html": "node bin/yrxlsim.js render --format html",
+    "build": "pkg . --out-path dist"
+  },
+  "dependencies": {
+    "hyperformula": "^3.1.1",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "pkg": {
+    "scripts": "bin/yrxlsim.js",
+    "assets": "quarto-book/resources/yrxlsim.css",
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ]
+  }
+}

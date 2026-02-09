@@ -1,6 +1,6 @@
 ---
 name: Excel ASCII Sim CLI
-overview: "Design a cross-platform command-line tool (yrXlsim) that generates ASCII-art "Excel" spreadsheets from declarative files, with separate FORMULAS and VALUES views, matching the style used in your Quarto book. Recommended stack: Python 3 with a YAML sheet format and formulas package for full Excel-style formula evaluation (classic and modern: IFS, COUNTIFS, XLOOKUP, etc.)."
+overview: "yrXlsim uses one shared JavaScript core (quarto-book/resources/yrxlsim.js) for (1) Quarto in-browser rendering of .yrxlsim code blocks and (2) a Node/Bash CLI that renders YAML to ASCII (terminal) or standalone HTML. Same parsing, fill, resolution, and HyperFormula evaluation everywhere. A self-contained binary can be built with pkg."
 todos: []
 isProject: false
 ---
@@ -9,31 +9,28 @@ isProject: false
 
 ## Goal
 
-A Bash-invokable CLI that produces ASCII-art spreadsheet grids like those on [your excelNotes page](https://y-rosenthal.github.io/excelNotes/0010225-randomValues-v001.html): column letters (A, B, C…), row numbers (1, 2, 3…), `+`/`-`/`|` borders, and two outputs—**FORMULAS VIEW** (formula text in cells) and **VALUES VIEW** (evaluated values). You can create or edit "spreadsheets" via human-editable files and render them from the command line (and from Quarto).
+**One shared JavaScript codebase** for:
+
+1. **Quarto (HTML)** — In-browser rendering of `.yrxlsim` code blocks into Formulas and Values tables (existing behavior).
+2. **Bash/CLI (Node)** — Render the same YAML to **(a)** ASCII-art grids (column letters, row numbers, `+`/`-`/`|` borders; FORMULAS and VALUES views) and **(b)** standalone HTML files with bundled CSS for viewing outside Quarto.
+
+You create or edit spreadsheets in human-editable YAML and can render them in the browser (Quarto) or from the command line (ASCII or HTML).
 
 ---
 
-## 1. Tech stack recommendation
+## 1. Tech stack (current)
 
-**Use Python 3** as the implementation language.
+**One JavaScript core** used in two environments:
 
+| Criterion          | Implementation                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| **Shared core**    | `quarto-book/resources/yrxlsim.js`: parse YAML, expand fill, resolve grid, HyperFormula for values, renderToHtml + renderToAscii. |
+| **Quarto**         | Same file (as `quarto-book/resources/yrxlsim.js`) runs in the browser; replaces `.yrxlsim` code blocks with HTML. |
+| **CLI**            | Node.js: `bin/yrxlsim.js` sets global `jsyaml` and `HyperFormula`, requires the core; outputs ASCII or writes standalone HTML. |
+| **Bash-friendly**  | Invoke as `yrxlsim render sheet.yaml` or `node bin/yrxlsim.js render sheet.yaml`; ASCII to stdout by default. |
+| **Cross-platform** | Node runs on Windows, macOS, Linux; Quarto unchanged.                                             |
 
-| Criterion          | Why Python                                                                                                                        |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Cross-platform** | Same script runs on Windows (`py` / `python`), macOS, and Linux (`python3`). No separate binaries.                                |
-| **Bash-friendly**  | Invoke as `xlsim render sheet.yaml`; output to stdout so you can pipe or redirect.                                                |
-| **Easy to edit**   | You (and co-authors) can tweak sheet files in any editor; no GUI required.                                                        |
-| **Portability**    | Can be written to use only the **stdlib** (no pip) for max portability, or one small dependency (e.g. PyYAML) if you prefer YAML. |
-| **Quarto**         | Fits common Quarto workflows (R/Python); you can call the script from a bash chunk and capture output.                            |
-
-
-**Alternatives considered**
-
-- **Node.js**: Same "runs everywhere" story, but less typical for this kind of data/CLI in a book context.
-- **Shell-only**: Hard to do robust parsing, formula evaluation, and pretty grids.
-- **Compiled (Rust/Go)**: Single binary is nice but more work to build and to change; overkill for a book tool.
-
-**Delivery**: Either a single script `xlsim` (or `xlsim.py`) that you run with `python3 xlsim ...`, or a small package installable with `pip install .` and an `xlsim` entry point. For a book repo, a single script in the repo is often enough.
+**Delivery**: Single source of truth: `quarto-book/resources/yrxlsim.js`. CLI: `npm install` then `yrxlsim render <file> [--format ascii|html] [--view formulas|values|both] [-o path]`. Self-contained binary: `npm run build` (pkg) → executables in `dist/`.
 
 ---
 
@@ -104,102 +101,68 @@ Use a **full Excel formula engine** so the tool can evaluate **any** classic and
 
 ### 3.3 CLI commands
 
-
-| Command                               | Purpose                                                                                               |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `xlsim render <file>`                 | Read sheet from `<file>`, output ASCII to stdout.                                                     |
-| `xlsim render <file> --view formulas` | Only FORMULAS VIEW.                                                                                   |
-| `xlsim render <file> --view values`   | Only VALUES VIEW.                                                                                     |
-| `xlsim render <file> --view both`     | Both views (e.g. two blocks, with labels). Default can be `both`.                                     |
-| `xlsim init [name]`                   | Create a sample sheet file (e.g. `dice.yaml`) in the current directory so you can edit and re-render. |
-
-
-**Optional later**:
-
-- `xlsim set <file> <cell> <value>` to set one cell from the command line (convenience for scripting).
-- `xlsim render <file> -o out.txt` to write to a file (otherwise stdout is enough for Quarto).
+| Command | Purpose |
+|--------|--------|
+| `yrxlsim render <file>` | Read YAML from `<file>` (or stdin if `-`), output ASCII (both views) to stdout. |
+| `yrxlsim render <file> --format ascii` | ASCII grid(s); use `--view formulas\|values\|both` to choose view(s). |
+| `yrxlsim render <file> --format html` | Standalone HTML file with bundled CSS and pre-rendered Formulas/Values tables. |
+| `yrxlsim render <file> -o <path>` | Write output to file. |
+| (Optional) `yrxlsim init [name]` | Create a sample sheet file. |
 
 ### 3.4 Quarto integration
 
-- In a `.qmd` file, use a **bash** chunk to run the tool and capture the ASCII:
-  ```markdown
+- **In-browser:** The same core (`yrxlsim.js` in book resources) runs on page load and replaces `.yrxlsim` code blocks with Formulas and Values HTML. No change to existing Quarto usage.
+- **ASCII in the book:** Use a bash chunk to run the CLI and include ASCII output:
+  ````markdown
   ```{bash}
   #| echo: false
   #| output: asis
-  xlsim render dice.yaml
+  yrxlsim render dice.yaml
   ```
-  ```
-
-  ```
-- Or run in the shell and paste the output into a fenced code block (with a label like "FORMULAS VIEW" / "VALUES VIEW" as on your page). Either way, the tool only needs to print to stdout.
+  ````
+- Or redirect to a file and include it. The CLI prints to stdout by default.
 
 ---
 
 ## 4. High-level architecture
 
-```mermaid
-flowchart LR
-  subgraph input [Input]
-    YAML[YAML sheet file]
-  end
-  subgraph tool [yrXlsim]
-    Parse[Parse YAML]
-    Formulas[Build formulas grid]
-    Values[Build values grid]
-    Render[ASCII renderer]
-  end
-  subgraph output [Output]
-    Stdout[stdout]
-  end
-  YAML --> Parse
-  Parse --> Formulas
-  Parse --> Values
-  Formulas --> Render
-  Values --> Render
-  Render --> Stdout
-```
-
-
-
-- **Parse**: Load YAML (or CSV), build an in-memory grid (e.g. list of rows, each row list of strings).
-- **Formulas grid**: Use cell contents as-is (formula text).
-- **Values grid**: Either from explicit `values` in the file, or from optional formula evaluation (with optional seed).
-- **ASCII renderer**: Given a grid + column widths (or auto from content), print the header line (column letters), then for each row print the separator line and the row line (row number + cell contents). Use `+`, `-`, `|` only so it works in any terminal and in Quarto.
+- **One core** (`quarto-book/resources/yrxlsim.js`): Parse YAML → expand fill → resolve grid → formulas grid (as-is) and values grid (HyperFormula + optional `values`). Exposes `renderToHtml` and `renderToAscii`.
+- **Quarto:** Core runs in browser; finds `code.yrxlsim` blocks, parses YAML, renders Formulas and Values HTML.
+- **CLI:** Node loads core (after setting `global.jsyaml` and `global.HyperFormula`), reads YAML from file or stdin, then either prints `renderToAscii(doc)` or builds a standalone HTML document with `renderToHtml` output and bundled CSS.
+- **ASCII renderer** (in core): Column letters, row numbers, `+`/`-`/`|` grid; FORMULAS VIEW and VALUES VIEW (one or both).
 
 ---
 
-## 5. File layout (suggested)
+## 5. File layout
 
 ```
 yrXlsim/
-├── README.md           # How to run, examples, Quarto usage
-├── pyproject.toml      # Optional: for pip install and xlsim entry point
-├── xlsim.py            # Single script, or
-├── xlsim/              # Or package layout
-│   ├── __init__.py
-│   ├── cli.py          # argparse / click
-│   ├── sheet.py        # load sheet (YAML/CSV), grid model
-│   ├── render.py       # grid -> ASCII
-│   └── eval.py         # optional: formula evaluation
-└── examples/
-    └── dice.yaml       # Sample sheet (from your RANDBETWEEN dice example)
+├── README.md
+├── package.json        # npm deps; scripts: build (pkg), render:ascii, render:html
+├── bin/
+│   ├── yrxlsim         # Bash wrapper
+│   └── yrxlsim.js      # Node CLI
+├── quarto-book/
+│   └── resources/
+│       ├── header.html
+│       ├── yrxlsim.css
+│       └── yrxlsim.js  # Single source of truth (Quarto + CLI)
+└── Examples/
+    └── *.yaml
 ```
-
-You can start with a **single file** (`xlsim.py`) and split into modules only if it grows.
 
 ---
 
 ## 6. Summary of recommendations
 
 
-| Topic        | Recommendation                                                                                                                                                                   |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Stack**    | Python 3, script or small package; stdlib-only possible.                                                                                                                         |
-| **Input**    | YAML file (one per sheet) with a `rows` (and optional `values`) structure.                                                                                                       |
-| **Output**   | ASCII grid with column letters, row numbers, `+`/`-`/`                                                                                                                           |
-| **Formulas** | Use the **formulas** package for full Excel-style evaluation (IFS, COUNTIFS, XLOOKUP, RANDBETWEEN, refs, etc.). Optional seed or `values` override for reproducible VALUES view. |
-| **CLI**      | `xlsim render [--view formulas                                                                                                                                                   |
-| **Quarto**   | Call `xlsim render ...` from a bash chunk; optionally `#                                                                                                                         |
+| Topic     | Recommendation |
+|----------|-----------------|
+| **Core** | One JavaScript codebase (`quarto-book/resources/yrxlsim.js`) for Quarto (browser) and CLI (Node). |
+| **Input** | YAML per spec: `rows`, `cells`, `fill`, `values`, `meta`. |
+| **Output** | ASCII (terminal) or standalone HTML with bundled CSS; in Quarto, in-browser HTML from code blocks. |
+| **Formulas** | HyperFormula in both environments; optional `meta.seed` and `values` override. |
+| **CLI** | `yrxlsim render <file> [--format ascii\|html] [--view formulas\|values\|both] [-o path]`. |
+| **Quarto** | Same core in resources; for ASCII in the book, call `yrxlsim render ...` from a bash chunk with `#\| output: asis`. |
 
-
-This gives you a single, Bash-runnable tool on Windows, Mac, and Linux that matches the look of your existing Excel-style ASCII art and keeps creating/editing simple via text files.
+This gives you one codebase for browser and CLI, ASCII and HTML output, and the same formula evaluation everywhere.

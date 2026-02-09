@@ -33,6 +33,8 @@ rows:
 
 You need at least one of: `rows`, `cells`, or `fill`, and they must supply at least one cell.
 
+**Rendering:** The same YAML can be rendered (1) **in Quarto** — use a fenced code block with class `yrxlsim` and the book’s JavaScript will show Formulas and Values in the browser; (2) **from the command line** — run `yrxlsim render yourfile.yaml` for ASCII in the terminal, or `yrxlsim render yourfile.yaml --format html -o out.html` for a standalone HTML file. Both use the same core logic.
+
 ---
 
 ## Defining the grid
@@ -271,3 +273,15 @@ Set **version** (e.g. `"0.0.1"`) so processors know which spec rules to use. If 
 | Spec version | `version: "0.0.1"` (or your target version) |
 
 For exact rules, conformance, and all edge cases, see **YAML-SPEC.md**.
+
+---
+
+## Rendering (Quarto vs CLI)
+
+| Where | How |
+|-------|-----|
+| **Quarto (HTML)** | Put your YAML in a code block with class `yrxlsim` (e.g. ` ```{.yrxlsim}`). The book’s script replaces it with Formulas and Values tables in the browser. |
+| **CLI — ASCII** | Run `yrxlsim render file.yaml` (or `node bin/yrxlsim.js render file.yaml`). Use `--view formulas` or `--view values` for one view only. |
+| **CLI — HTML** | Run `yrxlsim render file.yaml --format html -o file.html` to get a standalone HTML file with bundled CSS and the same table styling. |
+
+The same JavaScript core (`quarto-book/resources/yrxlsim.js`) is used for Quarto and for the CLI; formula evaluation (HyperFormula) and `values` overrides behave the same everywhere.

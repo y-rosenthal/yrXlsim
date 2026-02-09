@@ -1,6 +1,7 @@
 /**
- * yrXlsim — render YAML sheet spec as Excel-like HTML table (FORMULAS view).
- * Depends on: js-yaml (loaded separately). Run yrxlsim.renderAll() after DOM ready.
+ * yrXlsim — shared core: parse YAML sheet spec, expand fill, resolve grid,
+ * render as HTML (browser) or ASCII (CLI). Used by Quarto (browser) and by
+ * the yrxlsim CLI (Node). Depends on: js-yaml; for Values view: HyperFormula.
  */
 (function (global) {
   'use strict';
@@ -303,6 +304,28 @@
     return { grid: valuesGrid, maxRow: maxRow, maxCol: maxCol };
   }
 
+  function displayValue(v) {
+    if (v === undefined || v === null || v === '') return '';
+    if (typeof v === 'object' && v !== null && typeof v.value !== 'undefined') return String(v.value);
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    return String(v);
+  }
+
+  function escapeHtml(s) {
+    const str = String(s);
+    if (typeof global.document !== 'undefined' && global.document.createElement) {
+      const el = global.document.createElement('div');
+      el.textContent = str;
+      return el.innerHTML;
+    }
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function renderTableHtml(data, maxRow, maxCol, view) {
     const colHeaders = [];
     for (let c = 0; c < maxCol; c++) colHeaders.push(colIndexToLetters(c));
@@ -319,7 +342,8 @@
         const isFormula = view === 'formulas' && typeof val === 'string' && val.startsWith('=');
         const cls = isFormula ? ' yrxlsim-formula' : '';
         const display = (view === 'values' && (val === null || val === undefined)) ? '' : val;
-        html += '<td class="yrxlsim-cell' + cls + '">' + escapeHtml(displayValue(display)) + '</td>';
+        const disp = displayValue(display);
+        html += '<td class="yrxlsim-cell' + cls + '">' + escapeHtml(disp === '' ? '\u00A0' : disp) + '</td>';
       }
       html += '</tr>';
     }
@@ -337,25 +361,93 @@
     return renderTableHtml(values.grid, values.maxRow, values.maxCol, 'values');
   }
 
-  function displayValue(v) {
-    if (v === undefined || v === null || v === '') return '\u00A0';
-    if (typeof v === 'object' && v !== null && typeof v.value !== 'undefined') return String(v.value);
-    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
-    return String(v);
+  /** Pad string to width (no truncation; spaces on right). */
+  function padRight(str, width) {
+    const s = String(str);
+    if (s.length >= width) return s;
+    return s + Array(width - s.length + 1).join(' ');
   }
 
-  function escapeHtml(s) {
-    const el = document.createElement('div');
-    el.textContent = s;
-    return el.innerHTML;
+  /** Render one grid as ASCII: column letters, row numbers, + - | borders. */
+  function renderTableAscii(data, maxRow, maxCol, view) {
+    const minCellWidth = 2;
+    const rowHeaderWidth = Math.max(1, String(maxRow).length);
+    const colWidths = [];
+    for (let c = 0; c < maxCol; c++) {
+      let w = minCellWidth;
+      w = Math.max(w, colIndexToLetters(c).length);
+      for (let r = 0; r < maxRow; r++) {
+        const row = data[r] || [];
+        const val = row[c];
+        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : displayValue(val);
+        w = Math.max(w, String(disp).length);
+      }
+      colWidths.push(w);
+    }
+
+    const lines = [];
+    function sep() {
+      let s = '+' + Array(rowHeaderWidth + 1).join('-') + '+';
+      for (let c = 0; c < maxCol; c++) s += Array(colWidths[c] + 1).join('-') + '+';
+      lines.push(s);
+    }
+    function row(cells, isHeaderRow) {
+      let s = '|' + padRight(cells[0], rowHeaderWidth) + '|';
+      for (let c = 0; c < maxCol; c++) s += padRight(cells[c + 1], colWidths[c]) + '|';
+      lines.push(s);
+    }
+
+    sep();
+    const headerCells = [''];
+    for (let c = 0; c < maxCol; c++) headerCells.push(colIndexToLetters(c));
+    row(headerCells, true);
+    sep();
+    for (let r = 1; r <= maxRow; r++) {
+      const rowData = data[r - 1] || [];
+      const cells = [String(r)];
+      for (let c = 0; c < maxCol; c++) {
+        const val = rowData[c];
+        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : displayValue(val);
+        cells.push(disp);
+      }
+      row(cells, false);
+    }
+    sep();
+    return lines.join('\n');
+  }
+
+  /**
+   * Render doc to ASCII. view: 'formulas' | 'values' | 'both'.
+   * Returns string suitable for stdout or terminal.
+   */
+  function renderToAscii(doc, view) {
+    view = view || 'both';
+    const effective = buildEffectiveGrid(doc);
+    const formulasGrid = effective.grid;
+    const maxRow = effective.maxRow;
+    const maxCol = Math.max(effective.maxCol, 1);
+
+    if (view === 'formulas') {
+      return renderTableAscii(formulasGrid, maxRow, maxCol, 'formulas');
+    }
+    if (view === 'values') {
+      const values = buildValuesGrid(doc);
+      return renderTableAscii(values.grid, values.maxRow, values.maxCol, 'values');
+    }
+    const values = buildValuesGrid(doc);
+    return 'FORMULAS VIEW\n\n' + renderTableAscii(formulasGrid, maxRow, maxCol, 'formulas') +
+      '\n\nVALUES VIEW\n\n' + renderTableAscii(values.grid, values.maxRow, values.maxCol, 'values');
   }
 
   function renderAll() {
     if (typeof global.jsyaml === 'undefined') {
-      console.warn('yrxlsim: js-yaml not loaded. Include <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script> and ensure it exposes jsyaml.');
+      if (global.console && global.console.warn) {
+        global.console.warn('yrxlsim: js-yaml not loaded. Include js-yaml and ensure it exposes jsyaml.');
+      }
       return;
     }
-    document.querySelectorAll('code.yrxlsim, pre.yrxlsim code').forEach(function (block) {
+    if (typeof global.document === 'undefined' || !global.document.querySelectorAll) return;
+    global.document.querySelectorAll('code.yrxlsim, pre.yrxlsim code').forEach(function (block) {
       const pre = block.closest('pre');
       const yamlText = block.textContent || block.innerText || '';
       let doc;
@@ -372,16 +464,16 @@
       const formulasHtml = renderToHtml(doc, 'formulas');
       const valuesHtml = renderToHtml(doc, 'values');
       if (pre) {
-        const wrap = document.createElement('div');
+        const wrap = global.document.createElement('div');
         wrap.className = 'yrxlsim-wrapper';
-        const yamlLabel = document.createElement('div');
+        const yamlLabel = global.document.createElement('div');
         yamlLabel.className = 'yrxlsim-label yrxlsim-label-yaml';
         yamlLabel.textContent = 'YAML';
-        const formulasSection = document.createElement('div');
+        const formulasSection = global.document.createElement('div');
         formulasSection.className = 'yrxlsim-preview yrxlsim-preview-formulas';
         formulasSection.setAttribute('data-label', 'Formulas');
         formulasSection.innerHTML = formulasHtml;
-        const valuesSection = document.createElement('div');
+        const valuesSection = global.document.createElement('div');
         valuesSection.className = 'yrxlsim-preview yrxlsim-preview-values';
         valuesSection.setAttribute('data-label', 'Values');
         valuesSection.innerHTML = valuesHtml;
@@ -403,7 +495,10 @@
     parseA1: parseA1,
     parseRange: parseRange,
     buildEffectiveGrid: buildEffectiveGrid,
+    buildValuesGrid: buildValuesGrid,
     renderToHtml: renderToHtml,
+    renderToAscii: renderToAscii,
+    renderTableAscii: renderTableAscii,
     renderAll: renderAll
   };
 
@@ -413,18 +508,22 @@
     } else if (typeof global.YAML !== 'undefined') {
       global.jsyaml = global.YAML;
       renderAll();
-    } else {
-      console.warn('yrxlsim: YAML parser not found. Include js-yaml (e.g. <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>).');
+    } else if (typeof global.document !== 'undefined' && global.console && global.console.warn) {
+      global.console.warn('yrxlsim: YAML parser not found. Include js-yaml (e.g. from CDN or npm).');
     }
   }
-  if (typeof document !== 'undefined') {
+  if (typeof global.document !== 'undefined') {
     function scheduleRun() {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', run);
+      if (global.document.readyState === 'loading') {
+        global.document.addEventListener('DOMContentLoaded', run);
       } else {
         run();
       }
     }
     scheduleRun();
   }
-})(typeof window !== 'undefined' ? window : this);
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = global.yrxlsim;
+  }
+})(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this);

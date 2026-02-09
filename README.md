@@ -1,8 +1,11 @@
 # yrXlsim
 
-**yrXlsim** is a declarative, YAML-based spreadsheet format and tooling for authoring “Excel-like” sheets in plain text. Define cells, formulas, and fill operations in a single YAML file; render them as **Formulas** and **Values** views in HTML (e.g. in Quarto books) or—in the planned CLI—as ASCII-art grids for the terminal and documentation.
+**yrXlsim** is a declarative, YAML-based spreadsheet format with **one shared JavaScript core** used in two ways:
 
-Use it when writing books, tutorials, or docs: keep spreadsheets in version control, edit in any text editor, and get consistent, reproducible output with full Excel-style formula evaluation (including modern functions like `IFS`, `XLOOKUP`, `RANDBETWEEN`).
+1. **Quarto (HTML)** — In-browser rendering of `.yrxlsim` code blocks into **Formulas** and **Values** tables.
+2. **Bash/CLI (Node)** — Command-line rendering to **(a)** ASCII-art grids for the terminal and **(b)** standalone HTML files with bundled CSS.
+
+Define cells, formulas, and fill in a single YAML file; render in the browser (Quarto) or from the CLI. Same parsing, fill, resolution, and formula evaluation (HyperFormula) everywhere. Use it for books, tutorials, or docs: version-control-friendly YAML and full Excel-style functions (`IFS`, `XLOOKUP`, `RANDBETWEEN`, etc.).
 
 ---
 
@@ -10,11 +13,13 @@ Use it when writing books, tutorials, or docs: keep spreadsheets in version cont
 
 | Item | Description |
 |------|-------------|
-| **YAML format** | A formal spec for the sheet format: `rows`, `cells` (A1 map), `fill` (block/row/column/cell expand), `values` overrides, and `meta`. |
-| **HTML/Quarto renderer** | JavaScript that parses YAML in `.yrxlsim` code blocks, expands fill, resolves the grid, and renders Formulas + Values in the browser (using [HyperFormula](https://hyperformula.handsontable.com/) for evaluation). |
-| **Sample Quarto book** | `quarto-book/` — a minimal book that embeds yrXlsim YAML and shows the live tables. |
-| **Examples** | `Examples/` — 25+ example YAML files covering every feature of the spec. |
-| **Docs** | Spec, user guide, format design, and PRD for the (planned) ASCII CLI. |
+| **Shared core** | `quarto-book/resources/yrxlsim.js` — single source of truth for Quarto (browser) and CLI (Node): parse YAML, expand fill, resolve grid, HyperFormula evaluation, `renderToHtml` and `renderToAscii`. |
+| **YAML format** | Formal spec: `rows`, `cells` (A1 map), `fill` (block/row/column/cell expand), `values` overrides, `meta`. |
+| **Quarto** | Same core in `quarto-book/resources/yrxlsim.js`; parses `.yrxlsim` code blocks and renders Formulas + Values in the browser. |
+| **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or standalone HTML with bundled CSS. |
+| **Sample Quarto book** | `quarto-book/` — minimal book with embedded yrXlsim blocks. |
+| **Examples** | `Examples/` — 25+ example YAML files. |
+| **Docs** | YAML-SPEC, USER-GUIDE, FORMAT-DESIGN, PRD, plan. |
 
 ---
 
@@ -99,9 +104,25 @@ At least one of `rows`, `cells`, or `fill` must be present and supply at least o
   ```
 - Open `quarto-book/_book/index.html` in a browser. The sample book uses the same resources and shows many examples from the spec.
 
-### (Planned) Command-line ASCII renderer
+### Command-line renderer (ASCII and HTML)
 
-The [PRD](PRD.md) and [plan](plan.md) describe a **Python CLI** (`xlsim`) that would read the same YAML and output **ASCII-art** grids (column letters, row numbers, `+`/`-`/`|` borders) with separate **FORMULAS** and **VALUES** views for use in terminals and Quarto bash chunks. That CLI is not yet implemented in this repo; the current implementation is the **JavaScript HTML renderer** used in the Quarto book.
+From the repo root (after `npm install`):
+
+```bash
+# ASCII to stdout (both views)
+yrxlsim render Examples/01-minimal-document.yaml
+
+# ASCII, one view only
+yrxlsim render sheet.yaml --view formulas
+
+# Standalone HTML file with bundled CSS
+yrxlsim render sheet.yaml --format html -o sheet.html
+
+# Read YAML from stdin
+cat sheet.yaml | yrxlsim render -
+```
+
+The CLI requires the **same** `quarto-book/resources/yrxlsim.js` core as the Quarto book. See [PRD](PRD.md) and [plan](plan.md) for design.
 
 ---
 
@@ -109,21 +130,25 @@ The [PRD](PRD.md) and [plan](plan.md) describe a **Python CLI** (`xlsim`) that w
 
 ```
 yrXlsim/
-├── README.md              # This file
-├── YAML-SPEC.md           # Normative spec of the sheet format
-├── USER-GUIDE.md          # Author-facing guide to the format
-├── FORMAT-DESIGN.md       # Design rationale and schema
-├── PRD.md                 # Product requirements (CLI, etc.)
-├── plan.md                # Design plan for the ASCII CLI
+├── README.md
+├── package.json           # npm deps; scripts: build (pkg), render:ascii, render:html
+├── bin/
+│   ├── yrxlsim            # Bash wrapper
+│   └── yrxlsim.js         # Node CLI: render --format ascii|html [--view ...] [-o file]
+├── YAML-SPEC.md
+├── USER-GUIDE.md
+├── FORMAT-DESIGN.md
+├── PRD.md
+├── plan.md
 ├── Examples/              # Example YAML files (01–25)
-├── quarto-book/           # Sample Quarto book
-│   ├── _quarto.yml
-│   ├── index.qmd
-│   ├── yrxlsim.qmd        # Spec-based examples
-│   └── resources/
-│       ├── header.html    # Loads js-yaml, HyperFormula, yrxlsim.js
-│       ├── yrxlsim.css
-│       └── yrxlsim.js     # Parser, fill, resolution, HTML renderer
+└── quarto-book/
+    ├── _quarto.yml
+    ├── index.qmd
+    ├── yrxlsim.qmd
+    └── resources/
+        ├── header.html    # Loads js-yaml, HyperFormula, yrxlsim.js
+        ├── yrxlsim.css
+        └── yrxlsim.js     # Single source of truth (Quarto + CLI)
 ```
 
 ---
@@ -153,14 +178,13 @@ Use them as reference or as input to a future processor.
 
 ---
 
-## Dependencies (HTML renderer)
+## Dependencies
 
 - **Quarto** — to render the book (or any Quarto HTML project that embeds yrXlsim).
-- **In the built HTML** (loaded via your header):
-  - [js-yaml](https://github.com/nodeca/js-yaml) — parse YAML in the browser.
-  - [HyperFormula](https://hyperformula.handsontable.com/) — evaluate Excel-style formulas for the Values view.
+- **In the built HTML** (loaded via your header): [js-yaml](https://github.com/nodeca/js-yaml) and [HyperFormula](https://hyperformula.handsontable.com/) (e.g. from CDN) before `yrxlsim.js`.
+- **CLI** — Node.js and npm: run `npm install` in the repo root; the CLI uses `js-yaml` and `hyperformula` from npm.
 
-No R or Python packages are required for the current JavaScript-based rendering.
+**Self-contained binary:** Run `npm run build` (requires [pkg](https://github.com/vercel/pkg)) to produce executables in `dist/` for Linux, macOS, and Windows. For `--format html`, place `yrxlsim.css` next to the executable (or the binary will use minimal inline styles). Edit the core only in `quarto-book/resources/yrxlsim.js`; no sync step.
 
 ---
 
