@@ -1,4 +1,4 @@
-version: "0.0.1"
+version: "0.0.2"
 cells:
   A1: "=RANDBETWEEN(1,6)"
 fill:

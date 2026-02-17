@@ -1,4 +1,4 @@
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]

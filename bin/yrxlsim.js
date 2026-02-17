@@ -36,19 +36,21 @@ DESCRIPTION
   Uses the same JavaScript core (quarto-book/resources/yrxlsim.js) as the
   Quarto in-browser renderer, so formula evaluation and behavior match exactly.
 
-INPUT FORMAT (expected YAML)
+INPUT FORMAT (YAML spec v0.0.2)
   The input file is a YAML document: either a single sheet (rows, cells, fill,
   values, meta) or multiple sheets via a top-level "sheets" array of sheet objects.
   Single-sheet top-level keys:
     rows     List of rows; each row is a list of cell values (formulas or literals).
     cells    Optional A1-keyed map (e.g. A1: "Title", B2: "=A2") for sparse/patch.
-    fill     Optional list of expand ops: block (range + value), row, col, or cell fill.
+    fill     Optional list of expand ops: block (range/value or from/to/value), row,
+             col, or cell fill. Extension before replication; boundary clamping per spec.
     values   Optional override of evaluated results (for reproducible VALUES view).
     meta     Optional hints (e.g. seed, cols, defaultColWidth).
   Cell values: string starting with = is a formula; otherwise literal; null or "" = blank.
+  Literal string starting with =: prefix with single quote, e.g. "'=not a formula".
   At least one of rows, cells, or fill must define at least one cell.
   Multi-sheet: use top-level key "sheets:" with an array of sheet objects; each
-  is rendered in sequence. Full spec: YAML-SPEC.md and USER-GUIDE.md in the repo.
+  is rendered in sequence. Full spec: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the repo.
 
 USAGE
   ${bin} render <file> [options]
@@ -95,7 +97,7 @@ EXAMPLES
   ${bin} render examples.yaml
 
 SEE ALSO
-  YAML format: YAML-SPEC.md and USER-GUIDE.md in the yrXlsim repo.
+  YAML format: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the yrXlsim repo.
 `;
 }
 

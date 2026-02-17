@@ -1,2 +1,2 @@
 rows:
-  - ["=A2+B2", "Total", "42", null, ""]
+  - ["=A2+B2", "Total", "42", null, "", "'=literal equals"]

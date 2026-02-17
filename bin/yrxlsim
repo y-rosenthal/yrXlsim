@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# yrxlsim — Bash wrapper; runs the Node CLI using the shared lib/yrxlsim.js core.
+# yrxlsim — Bash wrapper; runs the Node CLI (YAML-SPEC v0.0.2) using quarto-book/resources/yrxlsim.js.
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec node "$SCRIPT_DIR/yrxlsim.js" "$@"

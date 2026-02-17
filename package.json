@@ -5,6 +5,9 @@
   "private": true,
   "bin": "bin/yrxlsim.js",
   "scripts": {
+    "test": "node --test test/core.test.js test/cli.test.js",
+    "test:core": "node --test test/core.test.js",
+    "test:cli": "node --test test/cli.test.js",
     "render:ascii": "node bin/yrxlsim.js render --format ascii",
     "render:html": "node bin/yrxlsim.js render --format html",
     "build": "pkg . --out-path dist"
