@@ -19,7 +19,7 @@ Define cells, formulas, and fill in a single YAML file; render in the browser (Q
 | **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or standalone HTML with bundled CSS. |
 | **Sample Quarto book** | `quarto-book/` — minimal book with embedded yrXlsim blocks. |
 | **Examples** | `Examples/` — 29 example YAML files. |
-| **Docs** | YAML-SPEC-v0.0.2, USER-GUIDE, PRD. |
+| **Docs** | YAML-SPEC-v0.0.2, USER-GUIDE, PRD, TESTING. |
 
 ---
 
@@ -143,7 +143,9 @@ yrXlsim/
 ├── YAML-SPEC-v0.0.2.md    # Current spec (see also YAML-SPEC-v0.0.1.md)
 ├── USER-GUIDE.md          # Authoring guide and format design rationale
 ├── PRD.md                 # Product requirements and technical design plan
+├── TESTING.md              # How to run tests (core + CLI)
 ├── Examples/              # Example YAML files (01–29)
+├── test/                   # Core and CLI test suites
 └── quarto-book/
     ├── _quarto.yml
     ├── index.qmd
@@ -163,14 +165,15 @@ yrXlsim/
 | [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) | Full normative specification (structure, rows, cells, fill, values, meta, resolution, used range). |
 | [USER-GUIDE.md](USER-GUIDE.md) | How to author sheets: rows vs cells, cell values, fill types, values overrides, meta, YAML tips. Includes a **format design and rationale** section (goals, schema overview, sparsity). |
 | [PRD.md](PRD.md) | Product requirements and technical design plan (goals, functional requirements, tech stack, CLI commands, Quarto integration). |
+| [TESTING.md](TESTING.md) | How to run the test suites (core and CLI), requirements, and implementation notes. |
 
 ### How to navigate the documentation
 
 - **Authors / new users:** Start here (README), then read [USER-GUIDE.md](USER-GUIDE.md). Use [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) when you need exact rules or edge cases.
 - **Implementers / conformance:** README → [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) (authoritative rules) → [USER-GUIDE.md](USER-GUIDE.md) for examples and format rationale.
-- **Contributors / product:** README → [PRD.md](PRD.md) → other docs as needed.
+- **Contributors / product:** README → [PRD.md](PRD.md) → other docs as needed. See [TESTING.md](TESTING.md) to run and extend tests.
 
-Suggested full read order: README → USER-GUIDE → YAML-SPEC-v0.0.2 → PRD.
+Suggested full read order: README → USER-GUIDE → YAML-SPEC-v0.0.2 → PRD. For development: add [TESTING.md](TESTING.md).
 
 ---
 
