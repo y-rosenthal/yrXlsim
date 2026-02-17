@@ -18,7 +18,7 @@ Define cells, formulas, and fill in a single YAML file; render in the browser (Q
 | **Quarto** | Same core in `quarto-book/resources/yrxlsim.js`; parses `.yrxlsim` code blocks and renders Formulas + Values in the browser. |
 | **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or standalone HTML with bundled CSS. |
 | **Sample Quarto book** | `quarto-book/` — minimal book with embedded yrXlsim blocks. |
-| **Examples** | `Examples/` — 25+ example YAML files. |
+| **Examples** | `Examples/` — 29 example YAML files. |
 | **Docs** | YAML-SPEC, USER-GUIDE, FORMAT-DESIGN, PRD, plan. |
 
 ---
@@ -28,7 +28,7 @@ Define cells, formulas, and fill in a single YAML file; render in the browser (Q
 Minimal sheet in YAML:
 
 ```yaml
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -41,7 +41,7 @@ In a Quarto document, use a fenced code block with the `yrxlsim` class so the Ja
 
 ````markdown
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -61,10 +61,10 @@ rows:
   - **Cell fill**: copy one cell to a rectangle with refs adjusted (`from: A1`, `down: 3`, `right: 2`).
 - **`values`** — Optional override of **evaluated** results (for reproducible Values view, e.g. freezing `RANDBETWEEN`).
 - **`meta`** — Optional hints (e.g. `seed`, `cols`, `defaultColWidth`).
-- **`version`** — Optional spec version (e.g. `"0.0.1"`).
+- **`version`** — Optional spec version (e.g. `"0.0.2"`).
 - **`sheets`** — Optional array of sheet objects for **multiple sheets** in one file; each element has the same keys as above. If present, each sheet is rendered in order.
 
-At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sheets`) and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC.md](YAML-SPEC.md).
+At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sheets`) and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md).
 
 ---
 
@@ -87,7 +87,7 @@ At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sh
 2. **Embed sheets** in any `.qmd` with a code block using the `yrxlsim` class:
    ````markdown
    ```{.yrxlsim}
-   version: "0.0.1"
+   version: "0.0.2"
    rows:
      - ["Col A", "Col B"]
      - ["=A2+1", "=B2*2"]
@@ -140,12 +140,12 @@ yrXlsim/
 ├── bin/
 │   ├── yrxlsim            # Bash wrapper
 │   └── yrxlsim.js         # Node CLI: render --format ascii|html [--view ...] [-o file]
-├── YAML-SPEC.md
+├── YAML-SPEC-v0.0.2.md    # Current spec (see also YAML-SPEC-v0.0.1.md)
 ├── USER-GUIDE.md
 ├── FORMAT-DESIGN.md
 ├── PRD.md
 ├── plan.md
-├── Examples/              # Example YAML files (01–25)
+├── Examples/              # Example YAML files (01–29)
 └── quarto-book/
     ├── _quarto.yml
     ├── index.qmd
@@ -162,7 +162,7 @@ yrXlsim/
 
 | Document | Purpose |
 |----------|---------|
-| [YAML-SPEC.md](YAML-SPEC.md) | Full normative specification (structure, rows, cells, fill, values, meta, resolution, used range). |
+| [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) | Full normative specification (structure, rows, cells, fill, values, meta, resolution, used range). |
 | [USER-GUIDE.md](USER-GUIDE.md) | How to author sheets: rows vs cells, cell values, fill types, values overrides, meta, YAML tips. |
 | [FORMAT-DESIGN.md](FORMAT-DESIGN.md) | Design goals, schema overview, sparsity and used range. |
 | [PRD.md](PRD.md) | Product requirements for the tool (output style, formula engine, CLI commands, Quarto integration). |
@@ -178,6 +178,7 @@ The `Examples/` folder contains YAML files that match the spec and the sample bo
 - **05–11**: Fill: block (range, from/to), row fill down, row fill toRow/toCol, column fill right, cell fill down/right, cell fill to.
 - **12–16**: Resolution, used range, values (A1 and array), meta, quoted/multiline keys.
 - **17–25**: Rows-only, cells-only, hybrid, values override, combined fill patterns.
+- **26–29**: Multi-sheet, fill up with clamping, column fill left, cells override fill.
 
 Use them as reference or as input to a future processor.
 
@@ -195,7 +196,7 @@ Use them as reference or as input to a future processor.
 
 ## Spec version
 
-The format version in the spec is **0.0.1**. Documents can set `version: "0.0.1"` (or omit it; processors assume the latest they support). See [YAML-SPEC.md](YAML-SPEC.md) for version semantics.
+The format version in the spec is **0.0.2**. Documents can set `version: "0.0.2"` (or omit it; processors assume the latest they support). See [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) for version semantics.
 
 ---
 

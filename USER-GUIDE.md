@@ -1,6 +1,6 @@
 # yrXlsim Sheet Format — User Guide
 
-This guide explains how to create and edit spreadsheet documents in the **yrXlsim YAML format** (`.yaml` or `.yml`). It’s written for authors and editors; for the full technical rules, see [YAML-SPEC.md](YAML-SPEC.md).
+This guide explains how to create and edit spreadsheet documents in the **yrXlsim YAML format** (`.yaml` or `.yml`). It’s written for authors and editors; for the full technical rules, see [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md).
 
 ---
 
@@ -22,7 +22,7 @@ You can use **rows** (array of rows), **cells** (A1-style map), or both. Fill ru
 Smallest useful example:
 
 ```yaml
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -245,7 +245,7 @@ meta:
 
 ## Version
 
-Set **version** (e.g. `"0.0.1"`) so processors know which spec rules to use. If you omit it, they typically assume the latest version they support.
+Set **version** (e.g. `"0.0.2"`) so processors know which spec rules to use. If you omit it, they typically assume the latest version they support.
 
 ---
 
@@ -270,10 +270,10 @@ Set **version** (e.g. `"0.0.1"`) so processors know which spec rules to use. If 
 | Repeat one cell to a block | `fill` with `from` and `down`/`up`/`right`/`left` or `to` |
 | Freeze evaluated results | `values` (A1 map or array of rows) |
 | Reproducible randoms | `meta.seed` and `values` for the cells to freeze |
-| Spec version | `version: "0.0.1"` (or your target version) |
+| Spec version | `version: "0.0.2"` (or your target version) |
 | Multiple sheets in one file | Top-level `sheets:` array; each element is a sheet object (rows, cells, fill, etc.). |
 
-For exact rules, conformance, and all edge cases, see **YAML-SPEC.md**.
+For exact rules, conformance, and all edge cases, see **YAML-SPEC-v0.0.2.md**.
 
 ---
 

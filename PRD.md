@@ -106,7 +106,7 @@ rows:
 - **Core:** Single JavaScript file `quarto-book/resources/yrxlsim.js` (single source of truth) that runs in both browser (Quarto) and Node.js (CLI). It parses YAML (via global `jsyaml`), expands fill, resolves grid, and uses **HyperFormula** (global) for formula evaluation. It exposes `buildEffectiveGrid`, `buildValuesGrid`, `renderToHtml`, `renderToAscii`, and (in browser) `renderAll` for `.yrxlsim` code blocks.
 - **Quarto:** Book resources use that same file plus `yrxlsim.css` and a header that loads js-yaml and HyperFormula from CDN. The script runs on DOM ready and replaces `code.yrxlsim` blocks with Formulas and Values HTML.
 - **CLI:** Node script `bin/yrxlsim.js` sets `global.jsyaml` and `global.HyperFormula`, then `require('quarto-book/resources/yrxlsim.js')`. It reads YAML from file or stdin and outputs ASCII (default) or writes a standalone HTML file with bundled CSS. A self-contained executable can be built with `pkg` (e.g. `npm run build` → `dist/`).
-- **Input:** YAML per [YAML-SPEC.md](YAML-SPEC.md) (rows, cells, fill, values, meta).
+- **Input:** YAML per [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) (rows, cells, fill, values, meta).
 
 ### 6.2 High-level architecture
 

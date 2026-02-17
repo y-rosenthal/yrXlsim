@@ -188,20 +188,30 @@
           if (typeof global.console !== 'undefined' && global.console.error) global.console.error(err.message);
           throw err;
         }
+        let minTemplateRow = maxTemplateRow;
+        for (let r = 1; r <= maxTemplateRow; r++) {
+          if (getCell(grid, r, templateCol) !== '' || (grid[r - 1] && grid[r - 1][templateCol] !== undefined)) {
+            minTemplateRow = r;
+            break;
+          }
+        }
         const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(String(op.toCol).toUpperCase()) - templateCol) : 0);
         const left = op.left || 0;
         const down = op.down !== undefined ? op.down : (op.toRow !== undefined ? Math.max(0, op.toRow - maxTemplateRow) : 0);
         const up = op.up || 0;
         const minCol = Math.max(0, templateCol - left);
         const maxCol = templateCol + right;
-        const minRow = Math.max(1, 1 - up);
+        const minRow = Math.max(1, minTemplateRow - up);
         const maxRow = maxTemplateRow + down;
         for (let c = minCol; c <= maxCol; c++) {
           if (c < 0) continue;
           const dc = c - templateCol;
           for (let r = minRow; r <= maxRow; r++) {
             let val; let dr = 0;
-            if (r <= maxTemplateRow) {
+            if (r < minTemplateRow) {
+              val = getCell(grid, minTemplateRow, templateCol);
+              dr = r - minTemplateRow;
+            } else if (r <= maxTemplateRow) {
               val = getCell(grid, r, templateCol);
             } else {
               val = getCell(grid, maxTemplateRow, templateCol);
