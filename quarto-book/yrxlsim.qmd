@@ -11,7 +11,7 @@ All blocks below are yrXlsim YAML from the spec. For each example the book shows
 ### 1.1 Minimal document
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]
@@ -20,7 +20,7 @@ rows:
 ### 1.2 Minimal (rows only) — §11.1
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
@@ -28,11 +28,11 @@ rows:
 
 ## §2 Rows
 
-### 2.1 Cell value types (formula, literal, number, null, empty)
+### 2.1 Cell value types (formula, literal, number, null, empty, literal equals)
 
 ```{.yrxlsim}
 rows:
-  - ["=A2+B2", "Total", "42", null, ""]
+  - ["=A2+B2", "Total", "42", null, "", "'=literal equals"]
 ```
 
 ### 2.2 Leading or middle blanks
@@ -146,7 +146,7 @@ fill:
 ### 4.8 Fill — row fill down (§11.5)
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
@@ -158,7 +158,7 @@ fill:
 ### 4.9 Fill — cell fill down (§11.6)
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 cells:
   A1: "Score"
   A2: "=RANDBETWEEN(1,100)"
@@ -170,7 +170,7 @@ fill:
 ### 4.10 Fill — block fill (§11.7)
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows: []
 fill:
   - range: A1:C4
@@ -180,7 +180,7 @@ fill:
 ### 4.11 Fill — cell fill down + right (§11.8)
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 cells:
   A1: "=RANDBETWEEN(1,6)"
 fill:
@@ -267,7 +267,7 @@ values:
 ### 8.1 Meta with suggested keys
 
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Roll"]
   - ["=RANDBETWEEN(1,6)"]

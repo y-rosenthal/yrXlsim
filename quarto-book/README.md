@@ -13,7 +13,7 @@ Use a fenced code block with the **yrxlsim** class:
 
 ````
 ```{.yrxlsim}
-version: "0.0.1"
+version: "0.0.2"
 rows:
   - ["Col A", "Col B"]
   - ["=A2+1", "Hello"]
