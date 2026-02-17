@@ -1,10 +1,15 @@
 # yrXlsim Spreadsheet Format — YAML Specification
 
-**Version:** 0.0.1  
-**Format name:** yrXlsim sheet format (YAML)  
+**Version:** 0.0.1
+**Format name:** yrXlsim sheet format (YAML)
 **File extension:** `.yaml` or `.yml`
 
-This document is the normative specification for the YAML-based spreadsheet format used by yrXlsim. The same logical structure may be represented as JSON for interchange or HTML rendering; the rules in this spec apply to that representation as well.
+The following is a spec intended to provide a file format for describing the contents of an Excel document. It could be used for rendering an image of said document or for specifying the contents of the spreadsheet with the intent of calculating the formulas and rendering the resulting image of the calculated spreadsheet. The format of the file is intended to make editing, maintaining and using a file that follows the format with minimal effort and minimal chance for errors creeping in. The goal is to have a file format that enables processing the file (i.e. rendering and calculating) using both CLI tools (primarily Bash) and Javascript (for use on websites) with the same core codebase.
+
+YAML was chosen as the underlying format. The same logical structure may be represented as JSON for interchange or HTML rendering; the rules in this spec apply to that representation as well.
+
+This document is the normative specification for the YAML-based spreadsheet format used by yrXlsim.
+
 
 ---
 
