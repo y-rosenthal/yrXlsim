@@ -83,6 +83,16 @@ describe('CLI render (file)', () => {
     assert.ok(content.includes('Values'));
     try { fs.unlinkSync(outPath); } catch (_) {}
   });
+
+  it('render multi-sheet file outputs each sheet with separator', () => {
+    const multiSheet = path.join(examplesDir, '26-multi-sheet.yaml');
+    if (!fs.existsSync(multiSheet)) return;
+    const r = runCli(['render', multiSheet, '--view', 'formulas']);
+    assert.strictEqual(r.status, 0);
+    assert.ok(r.stdout.includes('Sheet 2'));
+    assert.ok(r.stdout.includes('=A1+B1'));
+    assert.ok(r.stdout.includes('Label'));
+  });
 });
 
 describe('CLI render (stdin)', () => {

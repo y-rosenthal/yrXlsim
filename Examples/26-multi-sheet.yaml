@@ -1,0 +1,9 @@
+# §1.4 Multi-sheet document — root has sheets array; root-level rows/cells/fill ignored
+version: "0.0.2"
+sheets:
+  - version: "0.0.2"
+    rows:
+      - ["Label", "Data"]
+      - ["X", "=A2"]
+  - rows:
+      - ["=A1+B1", "Sum"]

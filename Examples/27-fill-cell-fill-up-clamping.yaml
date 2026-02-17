@@ -1,0 +1,7 @@
+# §13.9 Cell fill up with boundary clamping — fill produces A4, A3, A2; row 1 not reached
+version: "0.0.2"
+cells:
+  A5: "=A4*2"
+fill:
+  - from: A5
+    up: 3

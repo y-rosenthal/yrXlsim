@@ -1,0 +1,10 @@
+# §13.10 Column fill left — template column C replicated left to B and A; refs adjust
+version: "0.0.2"
+rows:
+  - [null, null, "=C1+1"]
+  - [null, null, "=C2+1"]
+cells:
+  C1: "100"
+fill:
+  - col: C
+    left: 2

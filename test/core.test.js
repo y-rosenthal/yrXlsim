@@ -184,6 +184,74 @@ describe('error conditions (§11)', () => {
   });
 });
 
+describe('multi-sheet (v0.0.2 §1.4)', () => {
+  it('getSheets returns each sheet; each builds effective grid independently', () => {
+    const doc = {
+      sheets: [
+        { rows: [['Label', 'Data'], ['X', '=A2']] },
+        { rows: [['=A1+B1', 'Sum']] }
+      ]
+    };
+    const sheets = yrxlsim.getSheets(doc);
+    assert.strictEqual(sheets.length, 2);
+    const g1 = yrxlsim.buildEffectiveGrid(sheets[0]);
+    const g2 = yrxlsim.buildEffectiveGrid(sheets[1]);
+    assert.strictEqual(g1.grid[0][0], 'Label');
+    assert.strictEqual(g1.grid[1][1], '=A2');
+    assert.strictEqual(g2.grid[0][0], '=A1+B1');
+    assert.strictEqual(g2.grid[0][1], 'Sum');
+  });
+});
+
+describe('fill up with boundary clamping (v0.0.2 §13.9)', () => {
+  it('cell fill up produces A2–A5; row 1 (A1) not filled by fill', () => {
+    const doc = {
+      cells: { A5: '=A4*2' },
+      fill: [{ from: 'A5', up: 3 }]
+    };
+    const { grid, maxRow } = yrxlsim.buildEffectiveGrid(doc);
+    assert.strictEqual(grid[4][0], '=A4*2');
+    assert.strictEqual(grid[3][0], '=A3*2');
+    assert.strictEqual(grid[2][0], '=A2*2');
+    assert.strictEqual(grid[1][0], '=A1*2');
+    assert.ok(maxRow >= 5);
+    const a1 = grid[0] && grid[0][0];
+    assert.ok(a1 === '' || a1 === undefined, 'A1 not filled by fill (boundary clamping)');
+  });
+});
+
+describe('column fill left (v0.0.2 §13.10)', () => {
+  it('replicates template column C left to B and A with column ref adjustment', () => {
+    const doc = {
+      rows: [[null, null, '=C1+1'], [null, null, '=C2+1']],
+      cells: { C1: '100' },
+      fill: [{ col: 'C', left: 2 }]
+    };
+    const { grid, maxRow, maxCol } = yrxlsim.buildEffectiveGrid(doc);
+    assert.strictEqual(maxCol, 3);
+    assert.strictEqual(grid[0][0], '100');
+    assert.strictEqual(grid[0][1], '100');
+    assert.strictEqual(grid[0][2], '100');
+    assert.strictEqual(grid[1][0], '=A2+1');
+    assert.strictEqual(grid[1][1], '=B2+1');
+    assert.strictEqual(grid[1][2], '=C2+1');
+  });
+});
+
+describe('cells override fill (pipeline step 4)', () => {
+  it('explicit cells entry wins over content produced by fill', () => {
+    const doc = {
+      rows: [['Hdr', 'Val'], ['a', '=A2+1']],
+      fill: [{ row: 2, down: 2 }],
+      cells: { B3: 'overridden' }
+    };
+    const { grid } = yrxlsim.buildEffectiveGrid(doc);
+    assert.strictEqual(grid[2][1], 'overridden');
+    assert.strictEqual(grid[1][1], '=A2+1');
+    assert.strictEqual(grid[3][1], '=A4+1');
+  });
+});
+
 describe('parseA1 / colIndexToLetters / colLettersToIndex', () => {
   it('parseA1 parses valid A1 addresses', () => {
     assert.deepStrictEqual(yrxlsim.parseA1('A1'), { row: 1, col: 0 });

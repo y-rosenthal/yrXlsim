@@ -1,0 +1,10 @@
+# Pipeline §1.2 step 4: cells applied after fill — explicit cell wins over filled content
+version: "0.0.2"
+rows:
+  - ["Hdr", "Val"]
+  - ["a", "=A2+1"]
+fill:
+  - row: 2
+    down: 2
+cells:
+  B3: "overridden"

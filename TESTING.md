@@ -55,6 +55,10 @@ Tests run with the current working directory at the project root so that paths t
   - **Error conditions (§11)** — Empty document (no rows/cells/fill) throws; fill with missing template row or empty template column throws.
   - **Helpers** — `parseA1`, `colIndexToLetters`, `colLettersToIndex` (round-trip and invalid input).
   - **Examples directory** — For each `.yaml`/`.yml` in `Examples/`, one test parses the file and builds the effective grid for every sheet (smoke test).
+- **Multi-sheet (§1.4)** — `getSheets` returns each sheet; each builds an effective grid independently.
+- **Fill up with boundary clamping (§13.9)** — Cell fill up produces only rows ≥ 1; A1 not filled.
+- **Column fill left (§13.10)** — Template column C replicated left to B and A with column ref adjustment.
+- **Cells override fill (pipeline step 4)** — Explicit `cells` entry wins over content produced by fill.
 
 ### CLI tests (`test/cli.test.js`)
 
@@ -67,7 +71,7 @@ Tests run with the current working directory at the project root so that paths t
   - **render -** — Stdin: valid YAML renders and exits 0; invalid (e.g. `rows: []` only) exits non-zero and stderr/stdout mentions “invalid sheet”.
   - **Invocation errors** — No args; `render` without file; invalid `--view` or `--format`; all exit non-zero.
   - **--examples (-e)** — When `Examples/` exists, exit 0 and stdout contains YAML (e.g. “sheets:” or “rows:”).
-- **Paths:** All file paths are under the project root (`path.join(__dirname, '..')`). If `Examples/01-minimal-document.yaml` is missing, file-based CLI tests are skipped (no failure).
+- **Paths:** All file paths are under the project root (`path.join(__dirname, '..')`). If `Examples/01-minimal-document.yaml` is missing, file-based CLI tests are skipped (no failure). Multi-sheet: rendering `Examples/26-multi-sheet.yaml` exits 0 and output includes "Sheet 2" and second-sheet content.
 
 ## Examples and the spec
 

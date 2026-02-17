@@ -26,6 +26,21 @@ rows:
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
 ```
 
+### 1.3 Multi-sheet (§1.4)
+
+When the root has a non-empty `sheets` array, the document has multiple sheets. Root-level `rows`, `cells`, and `fill` are ignored. Each sheet is processed independently.
+
+```{.yrxlsim}
+version: "0.0.2"
+sheets:
+  - version: "0.0.2"
+    rows:
+      - ["Label", "Data"]
+      - ["X", "=A2"]
+  - rows:
+      - ["=A1+B1", "Sum"]
+```
+
 ## §2 Rows
 
 ### 2.1 Cell value types (formula, literal, number, null, empty, literal equals)
@@ -189,6 +204,35 @@ fill:
     right: 2
 ```
 
+### 4.12 Fill — cell fill up with clamping (§13.9)
+
+Fill from a cell *up*; cells that would land at row &lt; 1 are discarded (boundary clamping).
+
+```{.yrxlsim}
+version: "0.0.2"
+cells:
+  A5: "=A4*2"
+fill:
+  - from: A5
+    up: 3
+```
+
+### 4.13 Fill — column fill left (§13.10)
+
+Replicate a template column to the *left*; column references in formulas adjust.
+
+```{.yrxlsim}
+version: "0.0.2"
+rows:
+  - [null, null, "=C1+1"]
+  - [null, null, "=C2+1"]
+cells:
+  C1: "100"
+fill:
+  - col: C
+    left: 2
+```
+
 ## §5 Resolution (cells override rows)
 
 ### 5.1 Resolution: cells override rows
@@ -212,6 +256,22 @@ rows:
 cells:
   B2: "=RANDBETWEEN(0,100)"
   D1: "Note"
+```
+
+### 5.3 Cells override fill (pipeline step 4)
+
+After fill runs, `cells` is applied again. So an explicit `cells` entry always wins over content produced by fill.
+
+```{.yrxlsim}
+version: "0.0.2"
+rows:
+  - ["Hdr", "Val"]
+  - ["a", "=A2+1"]
+fill:
+  - row: 2
+    down: 2
+cells:
+  B3: "overridden"
 ```
 
 ## §6 Used range
