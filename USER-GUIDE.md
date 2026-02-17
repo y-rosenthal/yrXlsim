@@ -277,6 +277,52 @@ For exact rules, conformance, and all edge cases, see **YAML-SPEC-v0.0.2.md**.
 
 ---
 
+## Format design and rationale
+
+This section explains the goals behind the format and how it relates to other spreadsheet representations. The normative rules and processing pipeline are in [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md).
+
+### Goals
+
+The spreadsheet format is designed to support:
+
+- **Human editing** — Authors can create and modify sheets in a text editor. Rows are laid out horizontally (one row per line or array) for quick scanning and editing.
+- **Sparse spreadsheets** — Blank cells need not be specified; only non-empty cells are required. Trailing blanks in a row can be omitted; isolated cells can be specified by address.
+- **Dual rendering** — The same logical structure is the source of truth for ASCII output (CLI) and HTML output (Quarto or standalone).
+- **One source of truth** — Formulas live in the file. An optional `values` override can freeze specific cell results for reproducible VALUES view without changing formulas.
+
+### Survey of existing formats
+
+| Approach | Structure | Sparse? | Row-based editing? | Notes |
+|----------|-----------|---------|--------------------|--------|
+| **SheetJS AOA** | Array of arrays | No | Yes | Dense; blanks = empty slots or null. |
+| **SheetJS CSF** | Object keyed by A1 | Yes | No | Ideal for sparse; poor for “one row per line” editing. |
+| **yrXlsim YAML** | `rows` + optional `cells` (A1 map) | Optional cell map | Yes | Hybrid: row-based with cell overrides for sparse or patch. |
+
+No single standard fits “row-based + sparse + formulas” perfectly. This format adopts the hybrid (rows + optional cell map) and adds `fill`, `values`, and `meta` as in the spec.
+
+### Logical schema (overview)
+
+- **At least one of** `rows`, `cells`, or `fill` must be present and supply at least one cell (cells-only or fill-only documents are valid).
+- **rows** — Array of rows; each row is an array of cell contents (formula or literal). Trailing blanks can be omitted; use `""` or `null` for leading/middle blanks.
+- **cells** — A1-keyed map. Override or extend `rows`. Use for sparse sheets or patching.
+- **values** — Override evaluated results for VALUES view only (e.g. freeze RANDBETWEEN).
+- **meta** — Optional hints (e.g. `seed`, `cols`, `defaultColWidth`).
+- **sheets** — Array of sheet objects for multiple sheets; each has the same keys.
+
+### Sparsity and used range
+
+- **Used range:** From `rows`: maxRow = row count, maxCol = longest row length. From `cells`: include each A1 key’s row/column. The used range is the rectangle from A1 to (maxRow, maxCol).
+- **Blank:** Not present in `cells` and (missing in `rows` or present as `""`/`null`). No need to pad `rows` with trailing blanks.
+
+### YAML authoring (style)
+
+- **Primary style:** Use `rows` with flow arrays: `- ["A", "B", "C"]`. One row per line.
+- **Multi-line formulas:** Use YAML multiline (`|` or `>`); ensure the leading `=` is preserved.
+- **Sparse:** Use the `cells` map for one-off or distant cells. Keys are A1-style.
+- **Comments:** Use `#` for section headers or to document formulas.
+
+---
+
 ## Rendering (Quarto vs CLI)
 
 | Where | How |

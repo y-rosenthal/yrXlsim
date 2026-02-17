@@ -4,6 +4,8 @@
 **Version:** 0.1 (draft)  
 **Last updated:** 2025-02-09
 
+This document combines **product requirements** and the **technical design plan** (goals, functional requirements, tech stack, CLI behavior, and Quarto integration) in one place.
+
 ---
 
 ## 1. Overview
@@ -168,7 +170,38 @@ Edit `quarto-book/resources/yrxlsim.js` only; no sync step. Build a self-contain
 
 ---
 
-## 7. Summary of recommendations
+## 7. Design plan (technical detail)
+
+This section adds implementation-focused detail that complements the requirements above. The authoritative input format is [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md).
+
+### 7.1 CLI commands
+
+| Command | Purpose |
+|--------|--------|
+| `yrxlsim render <file>` | Read YAML from `<file>` (or stdin if `-`), output ASCII (both views) to stdout. |
+| `yrxlsim render <file> --format ascii` | ASCII grid(s); use `--view formulas\|values\|both` to choose view(s). |
+| `yrxlsim render <file> --format html` | Standalone HTML file with bundled CSS and pre-rendered Formulas/Values tables. |
+| `yrxlsim render <file> -o <path>` | Write output to file. |
+| (Optional) `yrxlsim init [name]` | Create a sample sheet file. |
+
+### 7.2 Quarto integration (ASCII in the book)
+
+- **In-browser:** The same core (`yrxlsim.js` in book resources) runs on page load and replaces `.yrxlsim` code blocks with Formulas and Values HTML.
+- **ASCII in the book:** Use a bash chunk to run the CLI and include ASCII output:
+
+  ````markdown
+  ```{bash}
+  #| echo: false
+  #| output: asis
+  yrxlsim render dice.yaml
+  ```
+  ````
+
+  Or redirect to a file and include it. The CLI prints to stdout by default.
+
+---
+
+## 8. Summary of recommendations
 
 | Topic     | Recommendation |
 |----------|-----------------|
@@ -182,7 +215,7 @@ Edit `quarto-book/resources/yrxlsim.js` only; no sync step. Build a self-contain
 
 ---
 
-## 8. Out of scope (for initial release)
+## 9. Out of scope (for initial release)
 
 - Loading or saving native Excel (`.xlsx`) files as the primary workflow; YAML (or CSV-like) is the main input. Optional `.xlsx` loading may be considered later via `formulas[excel]`.
 - Interactive or GUI editing of spreadsheets; editing is done by modifying the YAML/CSV file in an external editor.
@@ -190,7 +223,7 @@ Edit `quarto-book/resources/yrxlsim.js` only; no sync step. Build a self-contain
 
 ---
 
-## 9. Success criteria
+## 10. Success criteria
 
 - Author can define a spreadsheet in a YAML file (e.g. dice example with RANDBETWEEN and cell references) and run `xlsim render dice.yaml` to get ASCII FORMULAS VIEW and VALUES VIEW.
 - Output visually matches the style of the existing excelNotes ASCII grids (column letters, row numbers, `+`/`-`/`|` grid).
