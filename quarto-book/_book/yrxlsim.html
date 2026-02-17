@@ -143,7 +143,7 @@ ul.task-list li input[type="checkbox"] {
   </ul></li>
   <li><a href="#rows" id="toc-rows" class="nav-link" data-scroll-target="#rows"><span class="header-section-number">3.2</span> §2 Rows</a>
   <ul class="collapse">
-  <li><a href="#cell-value-types-formula-literal-number-null-empty" id="toc-cell-value-types-formula-literal-number-null-empty" class="nav-link" data-scroll-target="#cell-value-types-formula-literal-number-null-empty"><span class="header-section-number">3.2.1</span> 2.1 Cell value types (formula, literal, number, null, empty)</a></li>
+  <li><a href="#cell-value-types-formula-literal-number-null-empty-literal-equals" id="toc-cell-value-types-formula-literal-number-null-empty-literal-equals" class="nav-link" data-scroll-target="#cell-value-types-formula-literal-number-null-empty-literal-equals"><span class="header-section-number">3.2.1</span> 2.1 Cell value types (formula, literal, number, null, empty, literal equals)</a></li>
   <li><a href="#leading-or-middle-blanks" id="toc-leading-or-middle-blanks" class="nav-link" data-scroll-target="#leading-or-middle-blanks"><span class="header-section-number">3.2.2</span> 2.2 Leading or middle blanks</a></li>
   </ul></li>
   <li><a href="#cells-a1-map" id="toc-cells-a1-map" class="nav-link" data-scroll-target="#cells-a1-map"><span class="header-section-number">3.3</span> §3 Cells (A1 map)</a>
@@ -221,14 +221,14 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="3.1" class="anchored" data-anchor-id="document-structure"><span class="header-section-number">3.1</span> §1 Document structure</h2>
 <section id="minimal-document" class="level3" data-number="3.1.1">
 <h3 data-number="3.1.1" class="anchored" data-anchor-id="minimal-document"><span class="header-section-number">3.1.1</span> 1.1 Minimal document</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 rows:
   - ["Label", "Data"]
   - ["X", "=A2"]</code></pre>
 </section>
 <section id="minimal-rows-only-11.1" class="level3" data-number="3.1.2">
 <h3 data-number="3.1.2" class="anchored" data-anchor-id="minimal-rows-only-11.1"><span class="header-section-number">3.1.2</span> 1.2 Minimal (rows only) — §11.1</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]</code></pre>
@@ -236,10 +236,10 @@ rows:
 </section>
 <section id="rows" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="rows"><span class="header-section-number">3.2</span> §2 Rows</h2>
-<section id="cell-value-types-formula-literal-number-null-empty" class="level3" data-number="3.2.1">
-<h3 data-number="3.2.1" class="anchored" data-anchor-id="cell-value-types-formula-literal-number-null-empty"><span class="header-section-number">3.2.1</span> 2.1 Cell value types (formula, literal, number, null, empty)</h3>
+<section id="cell-value-types-formula-literal-number-null-empty-literal-equals" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="cell-value-types-formula-literal-number-null-empty-literal-equals"><span class="header-section-number">3.2.1</span> 2.1 Cell value types (formula, literal, number, null, empty, literal equals)</h3>
 <pre class="yrxlsim"><code>rows:
-  - ["=A2+B2", "Total", "42", null, ""]</code></pre>
+  - ["=A2+B2", "Total", "42", null, "", "'=literal equals"]</code></pre>
 </section>
 <section id="leading-or-middle-blanks" class="level3" data-number="3.2.2">
 <h3 data-number="3.2.2" class="anchored" data-anchor-id="leading-or-middle-blanks"><span class="header-section-number">3.2.2</span> 2.2 Leading or middle blanks</h3>
@@ -333,7 +333,7 @@ fill:
 </section>
 <section id="fill-row-fill-down-11.5" class="level3" data-number="3.4.8">
 <h3 data-number="3.4.8" class="anchored" data-anchor-id="fill-row-fill-down-11.5"><span class="header-section-number">3.4.8</span> 4.8 Fill — row fill down (§11.5)</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]
@@ -343,7 +343,7 @@ fill:
 </section>
 <section id="fill-cell-fill-down-11.6" class="level3" data-number="3.4.9">
 <h3 data-number="3.4.9" class="anchored" data-anchor-id="fill-cell-fill-down-11.6"><span class="header-section-number">3.4.9</span> 4.9 Fill — cell fill down (§11.6)</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 cells:
   A1: "Score"
   A2: "=RANDBETWEEN(1,100)"
@@ -353,7 +353,7 @@ fill:
 </section>
 <section id="fill-block-fill-11.7" class="level3" data-number="3.4.10">
 <h3 data-number="3.4.10" class="anchored" data-anchor-id="fill-block-fill-11.7"><span class="header-section-number">3.4.10</span> 4.10 Fill — block fill (§11.7)</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 rows: []
 fill:
   - range: A1:C4
@@ -361,7 +361,7 @@ fill:
 </section>
 <section id="fill-cell-fill-down-right-11.8" class="level3" data-number="3.4.11">
 <h3 data-number="3.4.11" class="anchored" data-anchor-id="fill-cell-fill-down-right-11.8"><span class="header-section-number">3.4.11</span> 4.11 Fill — cell fill down + right (§11.8)</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 cells:
   A1: "=RANDBETWEEN(1,6)"
 fill:
@@ -437,7 +437,7 @@ values:
 <h2 data-number="3.8" class="anchored" data-anchor-id="meta"><span class="header-section-number">3.8</span> §8 Meta</h2>
 <section id="meta-with-suggested-keys" class="level3" data-number="3.8.1">
 <h3 data-number="3.8.1" class="anchored" data-anchor-id="meta-with-suggested-keys"><span class="header-section-number">3.8.1</span> 8.1 Meta with suggested keys</h3>
-<pre class="yrxlsim"><code>version: "0.0.1"
+<pre class="yrxlsim"><code>version: "0.0.2"
 rows:
   - ["Roll"]
   - ["=RANDBETWEEN(1,6)"]

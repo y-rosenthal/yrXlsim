@@ -26,6 +26,14 @@
   margin-top: 0.75em;
 }
 
+.yrxlsim-sheet-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #666;
+  margin-top: 1em;
+  margin-bottom: 0.25em;
+}
+
 .yrxlsim-wrapper .yrxlsim-preview-formulas::before {
   content: "Formulas";
   display: block;

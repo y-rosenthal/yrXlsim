@@ -58,6 +58,20 @@
     });
   }
 
+  /** §2.2.1: literal string starting with = is stored as '=...'; strip leading ' for display. */
+  function cellDisplayValue(v) {
+    const s = v === undefined || v === null || v === '' ? '' : String(v).trim();
+    if (s.length >= 2 && s[0] === "'" && s[1] === '=') return s.slice(1);
+    return s;
+  }
+
+  /** True if cell content is a formula (starts with = but not literal '=). */
+  function isFormula(val) {
+    if (!val || typeof val !== 'string') return false;
+    const s = val.trim();
+    return s.startsWith('=') && !(s.length >= 2 && s[0] === "'" && s[1] === '=');
+  }
+
   function getCell(grid, row, col) {
     const r = grid[row - 1];
     if (!r) return undefined;
@@ -87,6 +101,18 @@
     const cells = doc.cells || {};
     const fillOps = doc.fill || [];
 
+    function hasContent() {
+      if (rows.length > 0 && rows.some(function (row) { return row.some(function (c) { return c !== ''; }); })) return true;
+      const cellKeys = Object.keys(cells).filter(function (k) { return !k.includes(':') && parseA1(k); });
+      if (cellKeys.length > 0) return true;
+      return fillOps.length > 0;
+    }
+    if (!hasContent()) {
+      const err = new Error('yrxlsim: invalid sheet — at least one of rows, cells, or fill must supply at least one cell (§1.1).');
+      if (typeof global.console !== 'undefined' && global.console.error) global.console.error(err.message);
+      throw err;
+    }
+
     // Apply cells over rows for initial grid (resolution)
     const grid = rows.map(cloneRow);
     Object.keys(cells).forEach(function (key) {
@@ -111,53 +137,84 @@
         return;
       }
 
-      // Row fill
+      // Row fill (§4.3.2): extension (right/left) then replication (down/up); §4.5 clamp
       if (op.row !== undefined) {
         const templateRow = op.row;
         const rowData = getRow(grid, templateRow);
+        if (grid.length < templateRow) {
+          const err = new Error('yrxlsim: fill references template row ' + templateRow + ' which does not exist (§11).');
+          if (typeof global.console !== 'undefined' && global.console.error) global.console.error(err.message);
+          throw err;
+        }
         const maxColIdx = Math.max(0, rowData.length - 1);
         const down = op.down !== undefined ? op.down : (op.toRow !== undefined ? Math.max(0, op.toRow - templateRow) : 0);
         const up = op.up || 0;
-        const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(op.toCol) - maxColIdx) : 0);
+        const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(String(op.toCol).toUpperCase()) - maxColIdx) : 0);
+        const left = op.left || 0;
+        const minCol = Math.max(0, -left);
+        const maxCol = maxColIdx + right;
         for (let r = templateRow - up; r <= templateRow + down; r++) {
           if (r === templateRow) continue;
+          if (r < 1) continue;
           const dr = r - templateRow;
-          for (let c = 0; c <= maxColIdx + right; c++) {
-            const val = rowData[c] !== undefined && rowData[c] !== '' ? rowData[c] : getCell(grid, templateRow, c);
-            setCell(grid, r, c, (val && val.startsWith('=')) ? adjustRefInFormula(val, dr, 0) : (val || ''));
+          for (let c = minCol; c <= maxCol; c++) {
+            let val; let dc = 0;
+            if (c < 0) continue;
+            if (c <= maxColIdx) {
+              val = rowData[c] !== undefined && rowData[c] !== '' ? rowData[c] : getCell(grid, templateRow, c);
+            } else {
+              val = (rowData[maxColIdx] !== undefined && rowData[maxColIdx] !== '') ? rowData[maxColIdx] : getCell(grid, templateRow, maxColIdx);
+              dc = c - maxColIdx;
+            }
+            setCell(grid, r, c, isFormula(val) ? adjustRefInFormula(val, dr, dc) : (val || ''));
           }
         }
         return;
       }
 
-      // Column fill: copy template column to the right and optionally extend down
+      // Column fill (§4.3.3): extension (down/up) then replication (right/left); §4.5 clamp
       if (op.col !== undefined) {
         const colLetter = String(op.col).toUpperCase().replace(/\$/g, '');
         const templateCol = colLettersToIndex(colLetter);
-        const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(op.toCol) - templateCol) : 0);
-        const down = op.down !== undefined ? op.down : (op.toRow !== undefined ? Math.max(0, op.toRow - grid.length) : 0);
-        const maxTemplateRow = grid.length;
-        const maxRow = down > 0 ? maxTemplateRow + down : maxTemplateRow;
-        for (let c = templateCol; c <= templateCol + right; c++) {
-          const dc = c - templateCol;
-          for (let r = 1; r <= maxTemplateRow; r++) {
-            const val = getCell(grid, r, templateCol);
-            setCell(grid, r, c, (val && val.startsWith('=')) ? adjustRefInFormula(val, 0, dc) : (val || ''));
+        let maxTemplateRow = 0;
+        for (let r = grid.length; r >= 1; r--) {
+          if (getCell(grid, r, templateCol) !== '' || (grid[r - 1] && grid[r - 1][templateCol] !== undefined)) {
+            maxTemplateRow = r;
+            break;
           }
-          if (down > 0) {
-            const lastRowVal = getCell(grid, maxTemplateRow, templateCol);
-            for (let r = maxTemplateRow + 1; r <= maxRow; r++) {
-              const dr = r - maxTemplateRow;
-              const val = (lastRowVal && lastRowVal.startsWith('=')) ? adjustRefInFormula(lastRowVal, dr, dc) : (lastRowVal || '');
-              setCell(grid, r, c, val);
+        }
+        if (maxTemplateRow === 0) {
+          const err = new Error('yrxlsim: fill references template column ' + colLetter + ' which has no cells in the grid (§11).');
+          if (typeof global.console !== 'undefined' && global.console.error) global.console.error(err.message);
+          throw err;
+        }
+        const right = op.right !== undefined ? op.right : (op.toCol !== undefined ? Math.max(0, colLettersToIndex(String(op.toCol).toUpperCase()) - templateCol) : 0);
+        const left = op.left || 0;
+        const down = op.down !== undefined ? op.down : (op.toRow !== undefined ? Math.max(0, op.toRow - maxTemplateRow) : 0);
+        const up = op.up || 0;
+        const minCol = Math.max(0, templateCol - left);
+        const maxCol = templateCol + right;
+        const minRow = Math.max(1, 1 - up);
+        const maxRow = maxTemplateRow + down;
+        for (let c = minCol; c <= maxCol; c++) {
+          if (c < 0) continue;
+          const dc = c - templateCol;
+          for (let r = minRow; r <= maxRow; r++) {
+            let val; let dr = 0;
+            if (r <= maxTemplateRow) {
+              val = getCell(grid, r, templateCol);
+            } else {
+              val = getCell(grid, maxTemplateRow, templateCol);
+              dr = r - maxTemplateRow;
             }
+            setCell(grid, r, c, isFormula(val) ? adjustRefInFormula(val, dr, dc) : (val || ''));
           }
         }
         return;
       }
 
-      // Cell fill: from + down/up/right/left or to
-      if (op.from !== undefined) {
+      // Cell fill (§4.3.4): from + down/up/right/left or to; §4.5 clamp
+      if (op.from !== undefined && op.value === undefined) {
         const from = parseA1(op.from);
         if (!from) return;
         let r1 = from.row, r2 = from.row, c1 = from.col, c2 = from.col;
@@ -175,11 +232,13 @@
           if (op.right !== undefined) c2 = from.col + op.right;
           if (op.left !== undefined) c1 = from.col - op.left;
         }
+        r1 = Math.max(1, r1);
+        c1 = Math.max(0, c1);
         const templateVal = getCell(grid, from.row, from.col);
         for (let r = r1; r <= r2; r++) {
           for (let c = c1; c <= c2; c++) {
             const dr = r - from.row, dc = c - from.col;
-            const val = (templateVal && templateVal.startsWith('=')) ? adjustRefInFormula(templateVal, dr, dc) : templateVal;
+            const val = isFormula(templateVal) ? adjustRefInFormula(templateVal, dr, dc) : (templateVal || '');
             setCell(grid, r, c, val);
           }
         }
@@ -224,6 +283,16 @@
     return { grid: grid, maxRow: ur.maxRow, maxCol: ur.maxCol };
   }
 
+  /**
+   * Return an array of sheet documents. If root has a "sheets" array, return it;
+   * otherwise treat the root as a single sheet and return [root].
+   */
+  function getSheets(doc) {
+    if (!doc || typeof doc !== 'object') return [];
+    if (Array.isArray(doc.sheets) && doc.sheets.length > 0) return doc.sheets;
+    return [doc];
+  }
+
   function buildValuesGrid(doc) {
     const effective = buildEffectiveGrid(doc);
     const grid = effective.grid;
@@ -244,8 +313,12 @@
         for (let r = 0; r < maxRow; r++) {
           const row = [];
           for (let c = 0; c < maxCol; c++) {
-            const cell = (grid[r] && grid[r][c]) !== undefined && grid[r][c] !== null && grid[r][c] !== '' ? grid[r][c] : '';
-            row.push(typeof cell === 'string' ? cell : String(cell));
+            let cell = (grid[r] && grid[r][c]) !== undefined && grid[r][c] !== null && grid[r][c] !== '' ? grid[r][c] : '';
+            cell = typeof cell === 'string' ? cell : String(cell);
+            if (cell.length >= 2 && cell[0] === "'" && cell[1] === '=') {
+              cell = '="' + cell.slice(1).replace(/"/g, '""') + '"';
+            }
+            row.push(cell);
           }
           sheetData.push(row);
         }
@@ -267,7 +340,9 @@
       } catch (e) {
         valuesGrid = grid.map(function (row) {
           return (row || []).map(function (cell) {
-            return (cell != null && String(cell).startsWith('=')) ? '(error)' : (cell == null ? '' : cell);
+            if (cell == null || cell === '') return '';
+            if (cell.length >= 2 && cell[0] === "'" && cell[1] === '=') return cell.slice(1);
+            return (isFormula(cell)) ? '(error)' : cell;
           });
         });
       }
@@ -278,7 +353,8 @@
       valuesGrid = grid.map(function (row) {
         return (row || []).map(function (cell) {
           if (cell == null || cell === '') return '';
-          if (typeof cell === 'string' && cell.startsWith('=')) return '\u2026';
+          if (cell.length >= 2 && cell[0] === "'" && cell[1] === '=') return cell.slice(1);
+          if (isFormula(cell)) return '\u2026';
           return cell;
         });
       });
@@ -339,10 +415,10 @@
       const row = data[r - 1] || [];
       for (let c = 0; c < maxCol; c++) {
         const val = row[c];
-        const isFormula = view === 'formulas' && typeof val === 'string' && val.startsWith('=');
-        const cls = isFormula ? ' yrxlsim-formula' : '';
-        const display = (view === 'values' && (val === null || val === undefined)) ? '' : val;
-        const disp = displayValue(display);
+        const isFormulaCell = view === 'formulas' && isFormula(val);
+        const cls = isFormulaCell ? ' yrxlsim-formula' : '';
+        const display = (view === 'values' && (val === null || val === undefined)) ? '' : (view === 'formulas' ? cellDisplayValue(val) : val);
+        const disp = view === 'formulas' ? display : displayValue(display);
         html += '<td class="yrxlsim-cell' + cls + '">' + escapeHtml(disp === '' ? '\u00A0' : disp) + '</td>';
       }
       html += '</tr>';
@@ -368,7 +444,17 @@
     return s + Array(width - s.length + 1).join(' ');
   }
 
-  /** Render one grid as ASCII: column letters, row numbers, + - | borders. */
+  /** Center string in width (pad left and right; extra space on right if odd). */
+  function padCenter(str, width) {
+    const s = String(str);
+    if (s.length >= width) return s;
+    const total = width - s.length;
+    const left = Math.floor(total / 2);
+    const right = total - left;
+    return Array(left + 1).join(' ') + s + Array(right + 1).join(' ');
+  }
+
+  /** Render one grid as ASCII: unboxed centered column/row headers; data cells only are boxed. */
   function renderTableAscii(data, maxRow, maxCol, view) {
     const minCellWidth = 2;
     const rowHeaderWidth = Math.max(1, String(maxRow).length);
@@ -379,40 +465,39 @@
       for (let r = 0; r < maxRow; r++) {
         const row = data[r] || [];
         const val = row[c];
-        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : displayValue(val);
+        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : (view === 'formulas' ? cellDisplayValue(val) : displayValue(val));
         w = Math.max(w, String(disp).length);
       }
       colWidths.push(w);
     }
 
     const lines = [];
-    function sep() {
-      let s = '+' + Array(rowHeaderWidth + 1).join('-') + '+';
+    // Column headers (unboxed): centered in each column width
+    let headerLine = padCenter('', rowHeaderWidth);
+    for (let c = 0; c < maxCol; c++) {
+      headerLine += padCenter(colIndexToLetters(c), colWidths[c]);
+    }
+    lines.push(headerLine);
+    // Separator for data grid only (after row-header column)
+    function dataSep() {
+      let s = Array(rowHeaderWidth + 1).join(' ') + '+';
       for (let c = 0; c < maxCol; c++) s += Array(colWidths[c] + 1).join('-') + '+';
       lines.push(s);
     }
-    function row(cells, isHeaderRow) {
-      let s = '|' + padRight(cells[0], rowHeaderWidth) + '|';
-      for (let c = 0; c < maxCol; c++) s += padRight(cells[c + 1], colWidths[c]) + '|';
-      lines.push(s);
-    }
-
-    sep();
-    const headerCells = [''];
-    for (let c = 0; c < maxCol; c++) headerCells.push(colIndexToLetters(c));
-    row(headerCells, true);
-    sep();
+    dataSep();
     for (let r = 1; r <= maxRow; r++) {
       const rowData = data[r - 1] || [];
-      const cells = [String(r)];
+      // Row header (unboxed): row number centered in row-header width, then data cells boxed
+      let line = padCenter(String(r), rowHeaderWidth) + ' ';
+      line += '|';
       for (let c = 0; c < maxCol; c++) {
         const val = rowData[c];
-        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : displayValue(val);
-        cells.push(disp);
+        const disp = (view === 'values' && (val === null || val === undefined)) ? '' : (view === 'formulas' ? cellDisplayValue(val) : displayValue(val));
+        line += padRight(disp, colWidths[c]) + '|';
       }
-      row(cells, false);
+      lines.push(line);
     }
-    sep();
+    dataSep();
     return lines.join('\n');
   }
 
@@ -461,8 +546,17 @@
         if (pre) pre.outerHTML = '<div class="yrxlsim-error">YAML did not produce an object.</div>';
         return;
       }
-      const formulasHtml = renderToHtml(doc, 'formulas');
-      const valuesHtml = renderToHtml(doc, 'values');
+      const sheets = getSheets(doc);
+      let formulasHtml = '';
+      let valuesHtml = '';
+      for (let i = 0; i < sheets.length; i++) {
+        if (sheets.length > 1) {
+          formulasHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+          valuesHtml += '<div class="yrxlsim-sheet-label">Sheet ' + (i + 1) + '</div>';
+        }
+        formulasHtml += renderToHtml(sheets[i], 'formulas');
+        valuesHtml += renderToHtml(sheets[i], 'values');
+      }
       if (pre) {
         const wrap = global.document.createElement('div');
         wrap.className = 'yrxlsim-wrapper';
@@ -496,6 +590,7 @@
     parseRange: parseRange,
     buildEffectiveGrid: buildEffectiveGrid,
     buildValuesGrid: buildValuesGrid,
+    getSheets: getSheets,
     renderToHtml: renderToHtml,
     renderToAscii: renderToAscii,
     renderTableAscii: renderTableAscii,

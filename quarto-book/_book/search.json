@@ -14,7 +14,7 @@
     "href": "index.html#how-to-use",
     "title": "Excel with yrXlsim",
     "section": "1.1 How to use",
-    "text": "1.1 How to use\nIn your .qmd file, write a code block and add the yrxlsim class. The block below is a live example — it is rendered by JavaScript into the table you see:\nversion: \"0.0.1\"\nrows:\n  - [\"Label\", \"Value\"]\n  - [\"Total\", \"=A2*2\"]\nThe source for that table is the YAML above (in a block with class yrxlsim). The YAML must follow the yrXlsim sheet format (see YAML-SPEC.md). The next chapter shows more examples.",
+    "text": "1.1 How to use\nIn your .qmd file, write a code block and add the yrxlsim class. The block below is a live example — it is rendered by JavaScript into the table you see:\nversion: \"0.0.2\"\nrows:\n  - [\"Label\", \"Value\"]\n  - [\"Total\", \"=A2*2\"]\nThe source for that table is the YAML above (in a block with class yrxlsim). The YAML must follow the yrXlsim sheet format (see YAML-SPEC-v0.0.2.md). The next chapter shows more examples.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
     ]
@@ -34,7 +34,7 @@
     "href": "yrxlsim.html#document-structure",
     "title": "2  yrXlsim examples",
     "section": "3.1 §1 Document structure",
-    "text": "3.1 §1 Document structure\n\n3.1.1 1.1 Minimal document\nversion: \"0.0.1\"\nrows:\n  - [\"Label\", \"Data\"]\n  - [\"X\", \"=A2\"]\n\n\n3.1.2 1.2 Minimal (rows only) — §11.1\nversion: \"0.0.1\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]",
+    "text": "3.1 §1 Document structure\n\n3.1.1 1.1 Minimal document\nversion: \"0.0.2\"\nrows:\n  - [\"Label\", \"Data\"]\n  - [\"X\", \"=A2\"]\n\n\n3.1.2 1.2 Minimal (rows only) — §11.1\nversion: \"0.0.2\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
@@ -44,7 +44,7 @@
     "href": "yrxlsim.html#rows",
     "title": "2  yrXlsim examples",
     "section": "3.2 §2 Rows",
-    "text": "3.2 §2 Rows\n\n3.2.1 2.1 Cell value types (formula, literal, number, null, empty)\nrows:\n  - [\"=A2+B2\", \"Total\", \"42\", null, \"\"]\n\n\n3.2.2 2.2 Leading or middle blanks\nrows:\n  - [\"A\", \"\", \"C\"]    # B is blank\n  - [\"\", \"B2\", \"\"]    # A and C blank\n  - [\"X\", \"Y\"]        # row 3 has two cells; trailing cells are blank",
+    "text": "3.2 §2 Rows\n\n3.2.1 2.1 Cell value types (formula, literal, number, null, empty, literal equals)\nrows:\n  - [\"=A2+B2\", \"Total\", \"42\", null, \"\", \"'=literal equals\"]\n\n\n3.2.2 2.2 Leading or middle blanks\nrows:\n  - [\"A\", \"\", \"C\"]    # B is blank\n  - [\"\", \"B2\", \"\"]    # A and C blank\n  - [\"X\", \"Y\"]        # row 3 has two cells; trailing cells are blank",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
@@ -64,7 +64,7 @@
     "href": "yrxlsim.html#fill-expand",
     "title": "2  yrXlsim examples",
     "section": "3.4 §4 Fill (expand)",
-    "text": "3.4 §4 Fill (expand)\n\n3.4.1 4.1 Block fill (range + value)\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.2 4.2 Block fill (from/to)\nfill:\n  - from: A1\n    to: C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.3 4.3 Row fill down\nrows:\n  - [\"ColA\", \"ColB\"]\n  - [\"=A2+1\", \"=B2*2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.4 4.4 Row fill with toRow/toCol\nrows:\n  - [\"X\", \"Y\"]\nfill:\n  - row: 1\n    toRow: 4\n    toCol: D\n\n\n3.4.5 4.5 Column fill right\nrows:\n  - [\"=A1\", \"=B1\", \"=C1\"]\ncells:\n  A1: \"Header\"\nfill:\n  - col: A\n    right: 2\n    down: 3\n\n\n3.4.6 4.6 Cell fill down + right\ncells:\n  A1: \"=A1+1\"\nfill:\n  - from: A1\n    down: 3\n    right: 2\n\n\n3.4.7 4.7 Cell fill with to\ncells:\n  C4: \"=C4*2\"\nfill:\n  - from: C4\n    to: B2\n\n\n3.4.8 4.8 Fill — row fill down (§11.5)\nversion: \"0.0.1\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.9 4.9 Fill — cell fill down (§11.6)\nversion: \"0.0.1\"\ncells:\n  A1: \"Score\"\n  A2: \"=RANDBETWEEN(1,100)\"\nfill:\n  - from: A2\n    down: 5\n\n\n3.4.10 4.10 Fill — block fill (§11.7)\nversion: \"0.0.1\"\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.11 4.11 Fill — cell fill down + right (§11.8)\nversion: \"0.0.1\"\ncells:\n  A1: \"=RANDBETWEEN(1,6)\"\nfill:\n  - from: A1\n    down: 3\n    right: 2",
+    "text": "3.4 §4 Fill (expand)\n\n3.4.1 4.1 Block fill (range + value)\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.2 4.2 Block fill (from/to)\nfill:\n  - from: A1\n    to: C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.3 4.3 Row fill down\nrows:\n  - [\"ColA\", \"ColB\"]\n  - [\"=A2+1\", \"=B2*2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.4 4.4 Row fill with toRow/toCol\nrows:\n  - [\"X\", \"Y\"]\nfill:\n  - row: 1\n    toRow: 4\n    toCol: D\n\n\n3.4.5 4.5 Column fill right\nrows:\n  - [\"=A1\", \"=B1\", \"=C1\"]\ncells:\n  A1: \"Header\"\nfill:\n  - col: A\n    right: 2\n    down: 3\n\n\n3.4.6 4.6 Cell fill down + right\ncells:\n  A1: \"=A1+1\"\nfill:\n  - from: A1\n    down: 3\n    right: 2\n\n\n3.4.7 4.7 Cell fill with to\ncells:\n  C4: \"=C4*2\"\nfill:\n  - from: C4\n    to: B2\n\n\n3.4.8 4.8 Fill — row fill down (§11.5)\nversion: \"0.0.2\"\nrows:\n  - [\"first die\", \"second die\", \"Total\"]\n  - [\"=RANDBETWEEN(1,6)\", \"=RANDBETWEEN(1,6)\", \"=A2+B2\"]\nfill:\n  - row: 2\n    down: 8\n\n\n3.4.9 4.9 Fill — cell fill down (§11.6)\nversion: \"0.0.2\"\ncells:\n  A1: \"Score\"\n  A2: \"=RANDBETWEEN(1,100)\"\nfill:\n  - from: A2\n    down: 5\n\n\n3.4.10 4.10 Fill — block fill (§11.7)\nversion: \"0.0.2\"\nrows: []\nfill:\n  - range: A1:C4\n    value: \"=RANDBETWEEN(1,6)\"\n\n\n3.4.11 4.11 Fill — cell fill down + right (§11.8)\nversion: \"0.0.2\"\ncells:\n  A1: \"=RANDBETWEEN(1,6)\"\nfill:\n  - from: A1\n    down: 3\n    right: 2",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
@@ -104,7 +104,7 @@
     "href": "yrxlsim.html#meta",
     "title": "2  yrXlsim examples",
     "section": "3.8 §8 Meta",
-    "text": "3.8 §8 Meta\n\n3.8.1 8.1 Meta with suggested keys\nversion: \"0.0.1\"\nrows:\n  - [\"Roll\"]\n  - [\"=RANDBETWEEN(1,6)\"]\nmeta:\n  seed: 42\n  cols: 5\n  defaultColWidth: 12",
+    "text": "3.8 §8 Meta\n\n3.8.1 8.1 Meta with suggested keys\nversion: \"0.0.2\"\nrows:\n  - [\"Roll\"]\n  - [\"=RANDBETWEEN(1,6)\"]\nmeta:\n  seed: 42\n  cols: 5\n  defaultColWidth: 12",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>yrXlsim examples</span>"
     ]
