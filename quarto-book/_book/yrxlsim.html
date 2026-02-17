@@ -140,6 +140,7 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#minimal-document" id="toc-minimal-document" class="nav-link" data-scroll-target="#minimal-document"><span class="header-section-number">3.1.1</span> 1.1 Minimal document</a></li>
   <li><a href="#minimal-rows-only-11.1" id="toc-minimal-rows-only-11.1" class="nav-link" data-scroll-target="#minimal-rows-only-11.1"><span class="header-section-number">3.1.2</span> 1.2 Minimal (rows only) — §11.1</a></li>
+  <li><a href="#multi-sheet-1.4" id="toc-multi-sheet-1.4" class="nav-link" data-scroll-target="#multi-sheet-1.4"><span class="header-section-number">3.1.3</span> 1.3 Multi-sheet (§1.4)</a></li>
   </ul></li>
   <li><a href="#rows" id="toc-rows" class="nav-link" data-scroll-target="#rows"><span class="header-section-number">3.2</span> §2 Rows</a>
   <ul class="collapse">
@@ -164,11 +165,14 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#fill-cell-fill-down-11.6" id="toc-fill-cell-fill-down-11.6" class="nav-link" data-scroll-target="#fill-cell-fill-down-11.6"><span class="header-section-number">3.4.9</span> 4.9 Fill — cell fill down (§11.6)</a></li>
   <li><a href="#fill-block-fill-11.7" id="toc-fill-block-fill-11.7" class="nav-link" data-scroll-target="#fill-block-fill-11.7"><span class="header-section-number">3.4.10</span> 4.10 Fill — block fill (§11.7)</a></li>
   <li><a href="#fill-cell-fill-down-right-11.8" id="toc-fill-cell-fill-down-right-11.8" class="nav-link" data-scroll-target="#fill-cell-fill-down-right-11.8"><span class="header-section-number">3.4.11</span> 4.11 Fill — cell fill down + right (§11.8)</a></li>
+  <li><a href="#fill-cell-fill-up-with-clamping-13.9" id="toc-fill-cell-fill-up-with-clamping-13.9" class="nav-link" data-scroll-target="#fill-cell-fill-up-with-clamping-13.9"><span class="header-section-number">3.4.12</span> 4.12 Fill — cell fill up with clamping (§13.9)</a></li>
+  <li><a href="#fill-column-fill-left-13.10" id="toc-fill-column-fill-left-13.10" class="nav-link" data-scroll-target="#fill-column-fill-left-13.10"><span class="header-section-number">3.4.13</span> 4.13 Fill — column fill left (§13.10)</a></li>
   </ul></li>
   <li><a href="#resolution-cells-override-rows" id="toc-resolution-cells-override-rows" class="nav-link" data-scroll-target="#resolution-cells-override-rows"><span class="header-section-number">3.5</span> §5 Resolution (cells override rows)</a>
   <ul class="collapse">
   <li><a href="#resolution-cells-override-rows-1" id="toc-resolution-cells-override-rows-1" class="nav-link" data-scroll-target="#resolution-cells-override-rows-1"><span class="header-section-number">3.5.1</span> 5.1 Resolution: cells override rows</a></li>
   <li><a href="#hybrid-rows-cells-override-11.3" id="toc-hybrid-rows-cells-override-11.3" class="nav-link" data-scroll-target="#hybrid-rows-cells-override-11.3"><span class="header-section-number">3.5.2</span> 5.2 Hybrid (rows + cells override) — §11.3</a></li>
+  <li><a href="#cells-override-fill-pipeline-step-4" id="toc-cells-override-fill-pipeline-step-4" class="nav-link" data-scroll-target="#cells-override-fill-pipeline-step-4"><span class="header-section-number">3.5.3</span> 5.3 Cells override fill (pipeline step 4)</a></li>
   </ul></li>
   <li><a href="#used-range" id="toc-used-range" class="nav-link" data-scroll-target="#used-range"><span class="header-section-number">3.6</span> §6 Used range</a>
   <ul class="collapse">
@@ -232,6 +236,18 @@ rows:
 rows:
   - ["first die", "second die", "Total"]
   - ["=RANDBETWEEN(1,6)", "=RANDBETWEEN(1,6)", "=A2+B2"]</code></pre>
+</section>
+<section id="multi-sheet-1.4" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3" class="anchored" data-anchor-id="multi-sheet-1.4"><span class="header-section-number">3.1.3</span> 1.3 Multi-sheet (§1.4)</h3>
+<p>When the root has a non-empty <code>sheets</code> array, the document has multiple sheets. Root-level <code>rows</code>, <code>cells</code>, and <code>fill</code> are ignored. Each sheet is processed independently.</p>
+<pre class="yrxlsim"><code>version: "0.0.2"
+sheets:
+  - version: "0.0.2"
+    rows:
+      - ["Label", "Data"]
+      - ["X", "=A2"]
+  - rows:
+      - ["=A1+B1", "Sum"]</code></pre>
 </section>
 </section>
 <section id="rows" class="level2" data-number="3.2">
@@ -369,6 +385,29 @@ fill:
     down: 3
     right: 2</code></pre>
 </section>
+<section id="fill-cell-fill-up-with-clamping-13.9" class="level3" data-number="3.4.12">
+<h3 data-number="3.4.12" class="anchored" data-anchor-id="fill-cell-fill-up-with-clamping-13.9"><span class="header-section-number">3.4.12</span> 4.12 Fill — cell fill up with clamping (§13.9)</h3>
+<p>Fill from a cell <em>up</em>; cells that would land at row &lt; 1 are discarded (boundary clamping).</p>
+<pre class="yrxlsim"><code>version: "0.0.2"
+cells:
+  A5: "=A4*2"
+fill:
+  - from: A5
+    up: 3</code></pre>
+</section>
+<section id="fill-column-fill-left-13.10" class="level3" data-number="3.4.13">
+<h3 data-number="3.4.13" class="anchored" data-anchor-id="fill-column-fill-left-13.10"><span class="header-section-number">3.4.13</span> 4.13 Fill — column fill left (§13.10)</h3>
+<p>Replicate a template column to the <em>left</em>; column references in formulas adjust.</p>
+<pre class="yrxlsim"><code>version: "0.0.2"
+rows:
+  - [null, null, "=C1+1"]
+  - [null, null, "=C2+1"]
+cells:
+  C1: "100"
+fill:
+  - col: C
+    left: 2</code></pre>
+</section>
 </section>
 <section id="resolution-cells-override-rows" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="resolution-cells-override-rows"><span class="header-section-number">3.5</span> §5 Resolution (cells override rows)</h2>
@@ -390,6 +429,19 @@ cells:
 cells:
   B2: "=RANDBETWEEN(0,100)"
   D1: "Note"</code></pre>
+</section>
+<section id="cells-override-fill-pipeline-step-4" class="level3" data-number="3.5.3">
+<h3 data-number="3.5.3" class="anchored" data-anchor-id="cells-override-fill-pipeline-step-4"><span class="header-section-number">3.5.3</span> 5.3 Cells override fill (pipeline step 4)</h3>
+<p>After fill runs, <code>cells</code> is applied again. So an explicit <code>cells</code> entry always wins over content produced by fill.</p>
+<pre class="yrxlsim"><code>version: "0.0.2"
+rows:
+  - ["Hdr", "Val"]
+  - ["a", "=A2+1"]
+fill:
+  - row: 2
+    down: 2
+cells:
+  B3: "overridden"</code></pre>
 </section>
 </section>
 <section id="used-range" class="level2" data-number="3.6">
