@@ -19,7 +19,7 @@ Define cells, formulas, and fill in a single YAML file; render in the browser (Q
 | **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or standalone HTML with bundled CSS. |
 | **Sample Quarto book** | `quarto-book/` — minimal book with embedded yrXlsim blocks. |
 | **Examples** | `Examples/` — 29 example YAML files. |
-| **Docs** | YAML-SPEC-v0.0.2, USER-GUIDE, PRD, TESTING. |
+| **Docs** | In `docs/`: YAML-SPEC-v0.0.2, USER-GUIDE, PRD, TESTING. |
 
 ---
 
@@ -64,7 +64,7 @@ rows:
 - **`version`** — Optional spec version (e.g. `"0.0.2"`).
 - **`sheets`** — Optional array of sheet objects for **multiple sheets** in one file; each element has the same keys as above. If present, each sheet is rendered in order.
 
-At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sheets`) and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md).
+At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sheets`) and supply at least one cell. Processing order: **fill** → then **resolution** (cells override rows) → **used range**. Full rules: [YAML-SPEC-v0.0.2.md](docs/YAML-SPEC-v0.0.2.md).
 
 ---
 
@@ -127,7 +127,7 @@ yrxlsim render sheet.yaml --format html -o sheet.html
   yrxlsim --examples > examples.yaml && yrxlsim render examples.yaml
 ```
 
-The CLI requires the **same** `quarto-book/resources/yrxlsim.js` core as the Quarto book. Input may be a single sheet or multiple sheets (`sheets:` array). See [PRD](PRD.md) for product and technical design.
+The CLI requires the **same** `quarto-book/resources/yrxlsim.js` core as the Quarto book. Input may be a single sheet or multiple sheets (`sheets:` array). See [PRD](docs/PRD.md) for product and technical design.
 
 ---
 
@@ -140,10 +140,11 @@ yrXlsim/
 ├── bin/
 │   ├── yrxlsim            # Bash wrapper
 │   └── yrxlsim.js         # Node CLI: render --format ascii|html [--view ...] [-o file]
-├── YAML-SPEC-v0.0.2.md    # Current spec (see also YAML-SPEC-v0.0.1.md)
-├── USER-GUIDE.md          # Authoring guide and format design rationale
-├── PRD.md                 # Product requirements and technical design plan
-├── TESTING.md              # How to run tests (core + CLI)
+├── docs/
+│   ├── YAML-SPEC-v0.0.2.md    # Current spec (see also YAML-SPEC-v0.0.1.md)
+│   ├── USER-GUIDE.md          # Authoring guide and format design rationale
+│   ├── PRD.md                 # Product requirements and technical design plan
+│   └── TESTING.md             # How to run tests (core + CLI)
 ├── Examples/              # Example YAML files (01–29)
 ├── test/                   # Core and CLI test suites
 └── quarto-book/
@@ -162,18 +163,18 @@ yrXlsim/
 
 | Document | Purpose |
 |----------|---------|
-| [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) | Full normative specification (structure, rows, cells, fill, values, meta, resolution, used range). |
-| [USER-GUIDE.md](USER-GUIDE.md) | How to author sheets: rows vs cells, cell values, fill types, values overrides, meta, YAML tips. Includes a **format design and rationale** section (goals, schema overview, sparsity). |
-| [PRD.md](PRD.md) | Product requirements and technical design plan (goals, functional requirements, tech stack, CLI commands, Quarto integration). |
-| [TESTING.md](TESTING.md) | How to run the test suites (core and CLI), requirements, and implementation notes. |
+| [YAML-SPEC-v0.0.2.md](docs/YAML-SPEC-v0.0.2.md) | Full normative specification (structure, rows, cells, fill, values, meta, resolution, used range). |
+| [USER-GUIDE.md](docs/USER-GUIDE.md) | How to author sheets: rows vs cells, cell values, fill types, values overrides, meta, YAML tips. Includes a **format design and rationale** section (goals, schema overview, sparsity). |
+| [PRD.md](docs/PRD.md) | Product requirements and technical design plan (goals, functional requirements, tech stack, CLI commands, Quarto integration). |
+| [TESTING.md](docs/TESTING.md) | How to run the test suites (core and CLI), requirements, and implementation notes. |
 
 ### How to navigate the documentation
 
-- **Authors / new users:** Start here (README), then read [USER-GUIDE.md](USER-GUIDE.md). Use [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) when you need exact rules or edge cases.
-- **Implementers / conformance:** README → [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) (authoritative rules) → [USER-GUIDE.md](USER-GUIDE.md) for examples and format rationale.
-- **Contributors / product:** README → [PRD.md](PRD.md) → other docs as needed. See [TESTING.md](TESTING.md) to run and extend tests.
+- **Authors / new users:** Start here (README), then read [USER-GUIDE.md](docs/USER-GUIDE.md). Use [YAML-SPEC-v0.0.2.md](docs/YAML-SPEC-v0.0.2.md) when you need exact rules or edge cases.
+- **Implementers / conformance:** README → [YAML-SPEC-v0.0.2.md](docs/YAML-SPEC-v0.0.2.md) (authoritative rules) → [USER-GUIDE.md](docs/USER-GUIDE.md) for examples and format rationale.
+- **Contributors / product:** README → [PRD.md](docs/PRD.md) → other docs as needed. See [TESTING.md](docs/TESTING.md) to run and extend tests.
 
-Suggested full read order: README → USER-GUIDE → YAML-SPEC-v0.0.2 → PRD. For development: add [TESTING.md](TESTING.md).
+Suggested full read order: README → USER-GUIDE → YAML-SPEC-v0.0.2 → PRD. For development: add [TESTING.md](docs/TESTING.md).
 
 ---
 
@@ -203,7 +204,7 @@ Use them as reference or as input to a future processor.
 
 ## Spec version
 
-The format version in the spec is **0.0.2**. Documents can set `version: "0.0.2"` (or omit it; processors assume the latest they support). See [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) for version semantics.
+The format version in the spec is **0.0.2**. Documents can set `version: "0.0.2"` (or omit it; processors assume the latest they support). See [YAML-SPEC-v0.0.2.md](docs/YAML-SPEC-v0.0.2.md) for version semantics.
 
 ---
 

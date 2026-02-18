@@ -17,4 +17,4 @@ rows:
   - ["Total", "=A2*2"]
 ```
 
-The source for that table is the YAML above (in a block with class `yrxlsim`). The YAML must follow the [yrXlsim sheet format](https://github.com/...) (see YAML-SPEC-v0.0.2.md). The next chapter shows more examples.
+The source for that table is the YAML above (in a block with class `yrxlsim`). The YAML must follow the [yrXlsim sheet format](https://github.com/...) (see docs/YAML-SPEC-v0.0.2.md). The next chapter shows more examples.

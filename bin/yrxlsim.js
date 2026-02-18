@@ -50,7 +50,7 @@ INPUT FORMAT (YAML spec v0.0.2)
   Literal string starting with =: prefix with single quote, e.g. "'=not a formula".
   At least one of rows, cells, or fill must define at least one cell.
   Multi-sheet: use top-level key "sheets:" with an array of sheet objects; each
-  is rendered in sequence. Full spec: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the repo.
+  is rendered in sequence. Full spec: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the repo's docs folder.
 
 USAGE
   ${bin} render <file> [options]
@@ -97,7 +97,7 @@ EXAMPLES
   ${bin} render examples.yaml
 
 SEE ALSO
-  YAML format: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the yrXlsim repo.
+  YAML format: YAML-SPEC-v0.0.2.md and USER-GUIDE.md in the yrXlsim repo's docs folder.
 `;
 }
 
