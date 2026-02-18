@@ -30,8 +30,9 @@ DESCRIPTION
     • ASCII — Column letters, row numbers, and + - | grid; FORMULAS view and/or
       VALUES view (evaluated with HyperFormula). Suitable for terminals and
       inclusion in docs (e.g. Quarto bash chunks).
-    • HTML  — A single HTML file with bundled CSS and pre-rendered Formulas and
-      Values tables. No external scripts; open in any browser.
+    • HTML  — A single self-contained HTML file with bundled CSS and JavaScript:
+      YAML source, Formulas, and Values tables, with interactive view controls
+      (formulas/values/YAML only, tabs, stacked, or side-by-side). Open in any browser.
 
   Uses the same JavaScript core (quarto-book/resources/yrxlsim.js) as the
   Quarto in-browser renderer, so formula evaluation and behavior match exactly.
@@ -72,11 +73,11 @@ OPTIONS
                         ascii   Print FORMULAS and/or VALUES view as ASCII grid
                         html    Write standalone HTML with bundled CSS
 
-  --view <view>         Which view(s) to include (default: both)
-                        formulas  Only formula text per cell
-                        values    Only evaluated values per cell
-                        both      Formulas block then Values block (ASCII) or
-                                  both sections (HTML)
+  --view <view>         For ASCII only: which view(s) to include (default: both).
+                        For HTML, all views are included; use the in-page controls.
+                        formulas  Only formula text per cell (ASCII)
+                        values    Only evaluated values per cell (ASCII)
+                        both      Formulas then Values (ASCII)
 
   --output <path>, -o <path>   Write output to this file instead of stdout.
                                For ASCII, omit for terminal output.
@@ -230,7 +231,34 @@ function getCssPath() {
   return path.join(__dirname, '..', 'quarto-book', 'resources', 'yrxlsim.css');
 }
 
-function buildStandaloneHtml(sheets, view) {
+function getJsPath() {
+  if (process.pkg) {
+    const exeDir = path.dirname(process.execPath);
+    const paths = [
+      path.join(exeDir, 'quarto-book', 'resources', 'yrxlsim.js'),
+      path.join(exeDir, 'yrxlsim.js')
+    ];
+    for (const p of paths) {
+      try {
+        if (fs.existsSync(p)) return p;
+      } catch (_) {}
+    }
+    return null;
+  }
+  return path.join(__dirname, '..', 'quarto-book', 'resources', 'yrxlsim.js');
+}
+
+function escapeHtml(s) {
+  const str = String(s);
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildStandaloneHtml(sheets, rawYaml) {
   const sheetArray = Array.isArray(sheets) ? sheets : [sheets];
   let formulasHtml = '';
   let valuesHtml = '';
@@ -252,8 +280,21 @@ function buildStandaloneHtml(sheets, view) {
   if (!css) {
     css = '/* yrxlsim styles */ .yrxlsim-sheet{overflow-x:auto;border:1px solid #d4d4d4;}.yrxlsim-table{border-collapse:collapse;font-size:13px;}';
   }
-  const showFormulas = view === 'formulas' || view === 'both';
-  const showValues = view === 'values' || view === 'both';
+  const jsPath = getJsPath();
+  let js = '';
+  if (jsPath) {
+    try {
+      js = fs.readFileSync(jsPath, 'utf8');
+    } catch (e) {}
+  }
+  const yamlEscaped = escapeHtml(rawYaml || '');
+  const wrapperBody = '<div class="yrxlsim-wrapper" data-yrxlsim-layout="stacked" data-yrxlsim-order="yaml,formulas,values">' +
+    '<div class="yrxlsim-preview yrxlsim-preview-yaml" data-label="YAML">' +
+    '<div class="yrxlsim-label yrxlsim-label-yaml">YAML</div>' +
+    '<pre class="yrxlsim-yaml-source">' + yamlEscaped + '</pre></div>' +
+    '<div class="yrxlsim-preview yrxlsim-preview-formulas" data-label="Formulas">' + formulasHtml + '</div>' +
+    '<div class="yrxlsim-preview yrxlsim-preview-values" data-label="Values">' + valuesHtml + '</div>' +
+    '</div>';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -262,14 +303,13 @@ function buildStandaloneHtml(sheets, view) {
   <title>yrXlsim sheet</title>
   <style>
 ${css}
-.yrxlsim-standalone-section { margin: 1.5em 0; }
-.yrxlsim-standalone-section h2 { font-size: 1em; color: #555; margin-bottom: 0.25em; }
-.yrxlsim-sheet-label { font-size: 0.85em; font-weight: 600; color: #666; margin-top: 1em; margin-bottom: 0.25em; }
   </style>
 </head>
 <body>
-${showFormulas ? `<div class="yrxlsim-standalone-section"><h2>Formulas</h2>${formulasHtml}</div>` : ''}
-${showValues ? `<div class="yrxlsim-standalone-section"><h2>Values</h2>${valuesHtml}</div>` : ''}
+${wrapperBody}
+<script>
+${js}
+</script>
 </body>
 </html>
 `;
@@ -308,7 +348,7 @@ function main() {
     process.exit(1);
   }
 
-  function doRender(doc) {
+  function doRender(doc, rawYaml) {
     if (!doc || typeof doc !== 'object') {
       process.stderr.write('Error: YAML did not produce an object.\n');
       process.exit(1);
@@ -323,7 +363,7 @@ function main() {
       }
       out = parts.join('\n\n');
     } else {
-      out = buildStandaloneHtml(sheets, args.view);
+      out = buildStandaloneHtml(sheets, rawYaml);
     }
     writeOutput(out, args.output);
   }
@@ -338,7 +378,7 @@ function main() {
           process.stderr.write('Error parsing YAML: ' + e.message + '\n');
           process.exit(1);
         }
-        doRender(doc);
+        doRender(doc, args.format === 'html' ? raw : undefined);
       })
       .catch(function (e) {
         process.stderr.write('Error reading stdin: ' + e.message + '\n');
@@ -348,13 +388,24 @@ function main() {
   }
 
   let doc;
-  try {
-    doc = readYaml(args.file);
-  } catch (e) {
-    process.stderr.write('Error parsing YAML: ' + e.message + '\n');
-    process.exit(1);
+  let rawForHtml = undefined;
+  if (args.format === 'html') {
+    try {
+      rawForHtml = fs.readFileSync(args.file, 'utf8');
+      doc = global.jsyaml.load(rawForHtml);
+    } catch (e) {
+      process.stderr.write('Error reading or parsing YAML: ' + e.message + '\n');
+      process.exit(1);
+    }
+  } else {
+    try {
+      doc = readYaml(args.file);
+    } catch (e) {
+      process.stderr.write('Error parsing YAML: ' + e.message + '\n');
+      process.exit(1);
+    }
   }
-  doRender(doc);
+  doRender(doc, rawForHtml);
 }
 
 main();

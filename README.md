@@ -2,8 +2,8 @@
 
 **yrXlsim** is a declarative, YAML-based spreadsheet format with **one shared JavaScript core** used in two ways:
 
-1. **Quarto (HTML)** — In-browser rendering of `.yrxlsim` code blocks into **Formulas** and **Values** tables.
-2. **Bash/CLI (Node)** — Command-line rendering to **(a)** ASCII-art grids for the terminal and **(b)** standalone HTML files with bundled CSS.
+1. **Quarto (HTML)** — In-browser rendering of `.yrxlsim` code blocks into **YAML**, **Formulas**, and **Values** views with interactive controls (single view, tabs, stacked, or side-by-side).
+2. **Bash/CLI (Node)** — Command-line rendering to **(a)** ASCII-art grids for the terminal and **(b)** self-contained HTML files with the same view controls and bundled CSS/JS.
 
 Define cells, formulas, and fill in a single YAML file; render in the browser (Quarto) or from the CLI. Same parsing, fill, resolution, and formula evaluation (HyperFormula) everywhere. Use it for books, tutorials, or docs: version-control-friendly YAML and full Excel-style functions (`IFS`, `XLOOKUP`, `RANDBETWEEN`, etc.).
 
@@ -15,8 +15,8 @@ Define cells, formulas, and fill in a single YAML file; render in the browser (Q
 |------|-------------|
 | **Shared core** | `quarto-book/resources/yrxlsim.js` — single source of truth for Quarto (browser) and CLI (Node): parse YAML, expand fill, resolve grid, HyperFormula evaluation, `renderToHtml` and `renderToAscii`. |
 | **YAML format** | Formal spec: `rows`, `cells` (A1 map), `fill` (block/row/column/cell expand), `values` overrides, `meta`. |
-| **Quarto** | Same core in `quarto-book/resources/yrxlsim.js`; parses `.yrxlsim` code blocks and renders Formulas + Values in the browser. |
-| **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or standalone HTML with bundled CSS. |
+| **Quarto** | Same core in `quarto-book/resources/yrxlsim.js`; parses `.yrxlsim` code blocks and renders YAML + Formulas + Values with view controls in the browser. |
+| **CLI** | `bin/yrxlsim` / `bin/yrxlsim.js` — render YAML to ASCII (terminal) or self-contained HTML with view controls and bundled CSS/JS. |
 | **Sample Quarto book** | `quarto-book/` — minimal book with embedded yrXlsim blocks. |
 | **Examples** | `Examples/` — 29 example YAML files. |
 | **Docs** | In `docs/`: YAML-SPEC-v0.0.2, USER-GUIDE, PRD, TESTING. |
@@ -93,7 +93,7 @@ At least one of `rows`, `cells`, or `fill` must be present per sheet (or use `sh
      - ["=A2+1", "=B2*2"]
    ```
    ````
-   On render, the script finds all `code.yrxlsim` blocks, parses the YAML, builds the grid (including fill), and renders Formulas and Values tables.
+   On render, the script finds all `code.yrxlsim` blocks, parses the YAML, builds the grid (including fill), and renders YAML source plus Formulas and Values tables. A **view control** (dropdown) lets readers choose: formulas only, values only, YAML only, tabs, stacked, or side-by-side layout, and (for stacked/side-by-side) the order of the three views.
 
 3. **Build the book**: e.g. `quarto render` or **Build → Render Book** in RStudio. Open the generated HTML in a browser to see the tables.
 
@@ -116,7 +116,7 @@ yrxlsim render Examples/01-minimal-document.yaml
 # ASCII, one view only
 yrxlsim render sheet.yaml --view formulas
 
-# Standalone HTML file with bundled CSS
+# Self-contained HTML with view controls (YAML, Formulas, Values) and bundled CSS/JS
 yrxlsim render sheet.yaml --format html -o sheet.html
 
 # Read YAML from stdin
@@ -198,7 +198,7 @@ Use them as reference or as input to a future processor.
 - **In the built HTML** (loaded via your header): [js-yaml](https://github.com/nodeca/js-yaml) and [HyperFormula](https://hyperformula.handsontable.com/) (e.g. from CDN) before `yrxlsim.js`.
 - **CLI** — Node.js and npm: run `npm install` in the repo root; the CLI uses `js-yaml` and `hyperformula` from npm.
 
-**Self-contained binary:** Run `npm run build` (requires [pkg](https://github.com/vercel/pkg)) to produce executables in `dist/` for Linux, macOS, and Windows. For `--format html`, place `yrxlsim.css` next to the executable (or the binary will use minimal inline styles). Edit the core only in `quarto-book/resources/yrxlsim.js`; no sync step.
+**Self-contained binary:** Run `npm run build` (requires [pkg](https://github.com/vercel/pkg)) to produce executables in `dist/` for Linux, macOS, and Windows. For `--format html`, place `yrxlsim.css` and `yrxlsim.js` next to the executable (or the binary will use minimal inline styles and no view controls). Edit the core only in `quarto-book/resources/yrxlsim.js`; no sync step.
 
 ---
 

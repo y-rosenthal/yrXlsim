@@ -81,6 +81,8 @@ describe('CLI render (file)', () => {
     const content = fs.readFileSync(outPath, 'utf8');
     assert.ok(content.includes('Formulas'));
     assert.ok(content.includes('Values'));
+    assert.ok(content.includes('yrxlsim-wrapper'), 'HTML should include view wrapper for controls');
+    assert.ok(content.includes('yrxlsim-controls') || content.includes('initViewSwitcher'), 'HTML should include view-control script');
     try { fs.unlinkSync(outPath); } catch (_) {}
   });
 

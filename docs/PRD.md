@@ -106,8 +106,8 @@ rows:
 ### 6.1 Tech stack (current)
 
 - **Core:** Single JavaScript file `quarto-book/resources/yrxlsim.js` (single source of truth) that runs in both browser (Quarto) and Node.js (CLI). It parses YAML (via global `jsyaml`), expands fill, resolves grid, and uses **HyperFormula** (global) for formula evaluation. It exposes `buildEffectiveGrid`, `buildValuesGrid`, `renderToHtml`, `renderToAscii`, and (in browser) `renderAll` for `.yrxlsim` code blocks.
-- **Quarto:** Book resources use that same file plus `yrxlsim.css` and a header that loads js-yaml and HyperFormula from CDN. The script runs on DOM ready and replaces `code.yrxlsim` blocks with Formulas and Values HTML.
-- **CLI:** Node script `bin/yrxlsim.js` sets `global.jsyaml` and `global.HyperFormula`, then `require('quarto-book/resources/yrxlsim.js')`. It reads YAML from file or stdin and outputs ASCII (default) or writes a standalone HTML file with bundled CSS. A self-contained executable can be built with `pkg` (e.g. `npm run build` → `dist/`).
+- **Quarto:** Book resources use that same file plus `yrxlsim.css` and a header that loads js-yaml and HyperFormula from CDN. The script runs on DOM ready and replaces `code.yrxlsim` blocks with YAML source plus Formulas and Values HTML and attaches view controls (formulas/values/YAML only, tabs, stacked, side-by-side, with order controls).
+- **CLI:** Node script `bin/yrxlsim.js` sets `global.jsyaml` and `global.HyperFormula`, then `require('quarto-book/resources/yrxlsim.js')`. It reads YAML from file or stdin and outputs ASCII (default) or writes a self-contained HTML file with the same wrapper structure (YAML + Formulas + Values) and inlined CSS and JS so the same view controls work when the file is opened in a browser. A self-contained executable can be built with `pkg` (e.g. `npm run build` → `dist/`).
 - **Input:** YAML per [YAML-SPEC-v0.0.2.md](YAML-SPEC-v0.0.2.md) (rows, cells, fill, values, meta).
 
 ### 6.2 High-level architecture
@@ -180,13 +180,13 @@ This section adds implementation-focused detail that complements the requirement
 |--------|--------|
 | `yrxlsim render <file>` | Read YAML from `<file>` (or stdin if `-`), output ASCII (both views) to stdout. |
 | `yrxlsim render <file> --format ascii` | ASCII grid(s); use `--view formulas\|values\|both` to choose view(s). |
-| `yrxlsim render <file> --format html` | Standalone HTML file with bundled CSS and pre-rendered Formulas/Values tables. |
+| `yrxlsim render <file> --format html` | Self-contained HTML with YAML source, Formulas, and Values and interactive view controls (bundled CSS and JS). |
 | `yrxlsim render <file> -o <path>` | Write output to file. |
 | (Optional) `yrxlsim init [name]` | Create a sample sheet file. |
 
 ### 7.2 Quarto integration (ASCII in the book)
 
-- **In-browser:** The same core (`yrxlsim.js` in book resources) runs on page load and replaces `.yrxlsim` code blocks with Formulas and Values HTML.
+- **In-browser:** The same core (`yrxlsim.js` in book resources) runs on page load and replaces `.yrxlsim` code blocks with YAML source plus Formulas and Values HTML and adds view controls (single view, tabs, stacked, side-by-side, with order).
 - **ASCII in the book:** Use a bash chunk to run the CLI and include ASCII output:
 
   ````markdown
@@ -208,7 +208,7 @@ This section adds implementation-focused detail that complements the requirement
 | **Core** | Single JavaScript codebase (`quarto-book/resources/yrxlsim.js`) for Quarto (browser) and CLI (Node). |
 | **Stack** | JavaScript (browser + Node); CLI uses Node with npm (js-yaml, hyperformula). |
 | **Input** | YAML per spec: `rows`, `cells`, `fill`, `values`, `meta`. |
-| **Output** | **ASCII:** column letters, row numbers, `+`/`-`/`\|` borders; FORMULAS and VALUES views. **HTML:** standalone file with bundled CSS and pre-rendered tables (or in Quarto, live render from code blocks). |
+| **Output** | **ASCII:** column letters, row numbers, `+`/`-`/`\|` borders; FORMULAS and VALUES views. **HTML:** self-contained file with YAML, Formulas, and Values and interactive view controls (same in Quarto and CLI). |
 | **Formulas** | HyperFormula in both browser and Node for full Excel-style evaluation; optional `meta.seed` and `values` override for reproducibility. |
 | **CLI** | `yrxlsim render <file> [--format ascii\|html] [--view formulas\|values\|both] [-o path]`. |
 | **Quarto** | Same core in book resources; `.yrxlsim` code blocks rendered in-browser. For ASCII in the book, call `yrxlsim render ...` from a bash chunk with `#\| output: asis`. |

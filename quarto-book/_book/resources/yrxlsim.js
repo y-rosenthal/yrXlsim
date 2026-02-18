@@ -542,9 +542,9 @@
       return;
     }
     if (typeof global.document === 'undefined' || !global.document.querySelectorAll) return;
-    global.document.querySelectorAll('code.yrxlsim, pre.yrxlsim code').forEach(function (block) {
-      const pre = block.closest('pre');
-      const yamlText = block.textContent || block.innerText || '';
+    global.document.querySelectorAll('pre.yrxlsim').forEach(function (pre) {
+      const code = pre.querySelector('code') || pre;
+      const yamlText = (code.textContent || code.innerText || pre.textContent || '').trim();
       let doc;
       try {
         doc = global.jsyaml.load(yamlText);
@@ -573,6 +573,10 @@
         const yamlLabel = global.document.createElement('div');
         yamlLabel.className = 'yrxlsim-label yrxlsim-label-yaml';
         yamlLabel.textContent = 'YAML';
+        const yamlPane = global.document.createElement('div');
+        yamlPane.className = 'yrxlsim-preview yrxlsim-preview-yaml';
+        yamlPane.setAttribute('data-label', 'YAML');
+        yamlPane.appendChild(yamlLabel);
         const formulasSection = global.document.createElement('div');
         formulasSection.className = 'yrxlsim-preview yrxlsim-preview-formulas';
         formulasSection.setAttribute('data-label', 'Formulas');
@@ -581,16 +585,224 @@
         valuesSection.className = 'yrxlsim-preview yrxlsim-preview-values';
         valuesSection.setAttribute('data-label', 'Values');
         valuesSection.innerHTML = valuesHtml;
-        const parent = pre.parentNode;
-        parent.replaceChild(wrap, pre);
-        wrap.appendChild(yamlLabel);
-        wrap.appendChild(pre);
+        wrap.appendChild(yamlPane);
         wrap.appendChild(formulasSection);
         wrap.appendChild(valuesSection);
-      } else {
-        block.outerHTML = formulasHtml;
+        const parent = pre.parentNode;
+        parent.replaceChild(wrap, pre);
+        yamlPane.appendChild(pre);
       }
     });
+  }
+
+  /** View layout modes. Does not depend on js-yaml or HyperFormula. */
+  function initViewSwitcher(wrapper) {
+    const VIEW_IDS = ['yaml', 'formulas', 'values'];
+    const LABELS = { yaml: 'YAML', formulas: 'Formulas', values: 'Values' };
+    const panes = {
+      yaml: wrapper.querySelector('.yrxlsim-preview-yaml'),
+      formulas: wrapper.querySelector('.yrxlsim-preview-formulas'),
+      values: wrapper.querySelector('.yrxlsim-preview-values')
+    };
+    if (!panes.yaml || !panes.formulas || !panes.values) return;
+    const container = wrapper.querySelector('.yrxlsim-views-container');
+    if (container) return;
+
+    let layoutMode = (wrapper.getAttribute('data-yrxlsim-layout') || 'stacked');
+    let order = (wrapper.getAttribute('data-yrxlsim-order') || 'yaml,formulas,values').split(',');
+
+    function getOrder() {
+      return order.slice();
+    }
+    function setOrder(newOrder) {
+      if (newOrder.length !== 3) return;
+      order = newOrder.slice();
+      wrapper.setAttribute('data-yrxlsim-order', order.join(','));
+      applyLayout();
+    }
+    function getLayout() { return layoutMode; }
+    function setLayout(mode) {
+      layoutMode = mode;
+      wrapper.setAttribute('data-yrxlsim-layout', layoutMode);
+      applyLayout();
+    }
+
+    function applyLayout() {
+      wrapper.classList.remove('yrxlsim-layout-single', 'yrxlsim-layout-tabs', 'yrxlsim-layout-stacked', 'yrxlsim-layout-sidebyside');
+      VIEW_IDS.forEach(function (id) {
+        panes[id].classList.remove('yrxlsim-tab-active', 'yrxlsim-order-1', 'yrxlsim-order-2', 'yrxlsim-order-3');
+        panes[id].style.display = '';
+        panes[id].style.order = '';
+      });
+      if (layoutMode === 'single-formulas') {
+        wrapper.classList.add('yrxlsim-layout-single');
+        panes.formulas.style.display = 'block';
+        panes.yaml.style.display = 'none';
+        panes.values.style.display = 'none';
+      } else if (layoutMode === 'single-values') {
+        wrapper.classList.add('yrxlsim-layout-single');
+        panes.values.style.display = 'block';
+        panes.yaml.style.display = 'none';
+        panes.formulas.style.display = 'none';
+      } else if (layoutMode === 'single-yaml') {
+        wrapper.classList.add('yrxlsim-layout-single');
+        panes.yaml.style.display = 'block';
+        panes.formulas.style.display = 'none';
+        panes.values.style.display = 'none';
+      } else if (layoutMode === 'tabs') {
+        wrapper.classList.add('yrxlsim-layout-tabs');
+        var activeId = order[0];
+        panes[activeId].classList.add('yrxlsim-tab-active');
+        panes[activeId].style.display = 'block';
+        order.slice(1).forEach(function (id) {
+          panes[id].style.display = 'none';
+        });
+      } else if (layoutMode === 'stacked') {
+        wrapper.classList.add('yrxlsim-layout-stacked');
+        order.forEach(function (id, i) {
+          panes[id].style.display = 'block';
+          panes[id].style.order = String(i);
+        });
+      } else if (layoutMode === 'sidebyside') {
+        wrapper.classList.add('yrxlsim-layout-sidebyside');
+        order.forEach(function (id, i) {
+          panes[id].style.display = 'block';
+          panes[id].style.order = String(i);
+        });
+      }
+      var tabsBarEl = wrapper.querySelector('.yrxlsim-tabs-bar');
+      var orderWrapEl = wrapper.querySelector('.yrxlsim-order-controls');
+      if (tabsBarEl) tabsBarEl.style.display = layoutMode === 'tabs' ? 'flex' : 'none';
+      if (orderWrapEl) orderWrapEl.style.display = (layoutMode === 'stacked' || layoutMode === 'sidebyside') ? 'flex' : 'none';
+    }
+
+    function ensureControlBar() {
+      var bar = wrapper.querySelector('.yrxlsim-controls');
+      if (bar) return bar;
+      bar = global.document.createElement('div');
+      bar.className = 'yrxlsim-controls';
+      var layoutSelect = global.document.createElement('select');
+      layoutSelect.className = 'yrxlsim-layout-select';
+      layoutSelect.setAttribute('aria-label', 'View layout');
+      [
+        { value: 'single-formulas', label: 'Formulas only' },
+        { value: 'single-values', label: 'Values only' },
+        { value: 'single-yaml', label: 'YAML only' },
+        { value: 'tabs', label: 'Tabs' },
+        { value: 'stacked', label: 'Stacked' },
+        { value: 'sidebyside', label: 'Side by side' }
+      ].forEach(function (opt) {
+        var o = global.document.createElement('option');
+        o.value = opt.value;
+        o.textContent = opt.label;
+        if (opt.value === layoutMode) o.selected = true;
+        layoutSelect.appendChild(o);
+      });
+      layoutSelect.addEventListener('change', function () {
+        setLayout(layoutSelect.value);
+        updateOrderSelects();
+      });
+      bar.appendChild(layoutSelect);
+
+      var orderWrap = global.document.createElement('div');
+      orderWrap.className = 'yrxlsim-order-controls';
+      var orderLabels = ['First', 'Second', 'Third'];
+      var orderSelects = [];
+      for (var i = 0; i < 3; i++) {
+        var row = global.document.createElement('span');
+        row.className = 'yrxlsim-order-row';
+        var lab = global.document.createElement('label');
+        lab.textContent = (layoutMode === 'sidebyside' ? ['Left', 'Middle', 'Right'][i] : orderLabels[i]) + ': ';
+        var sel = global.document.createElement('select');
+        sel.className = 'yrxlsim-order-select';
+        sel.setAttribute('data-index', String(i));
+        VIEW_IDS.forEach(function (id) {
+          var o = global.document.createElement('option');
+          o.value = id;
+          o.textContent = LABELS[id];
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', function () {
+          var idx = parseInt(sel.getAttribute('data-index'), 10);
+          var oldOrder = getOrder();
+          var newVal = sel.value;
+          if (oldOrder[idx] === newVal) return;
+          var newOrder = oldOrder.slice();
+          newOrder[idx] = newVal;
+          var displaced = oldOrder[idx];
+          for (var j = 0; j < 3; j++) {
+            if (j !== idx && oldOrder[j] === newVal) {
+              newOrder[j] = displaced;
+              break;
+            }
+          }
+          setOrder(newOrder);
+          updateOrderSelects();
+        });
+        row.appendChild(lab);
+        row.appendChild(sel);
+        orderWrap.appendChild(row);
+        orderSelects.push(sel);
+      }
+      bar.appendChild(orderWrap);
+
+      function updateOrderSelects() {
+        var o = getOrder();
+        orderSelects.forEach(function (sel, i) {
+          sel.value = o[i] || VIEW_IDS[i];
+        });
+        orderWrap.style.display = (layoutMode === 'stacked' || layoutMode === 'sidebyside') ? 'flex' : 'none';
+      }
+      updateOrderSelects();
+
+      var tabsBar = global.document.createElement('div');
+      tabsBar.className = 'yrxlsim-tabs-bar';
+      VIEW_IDS.forEach(function (id) {
+        var btn = global.document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'yrxlsim-tab-btn';
+        btn.setAttribute('data-view', id);
+        btn.textContent = LABELS[id];
+        btn.addEventListener('click', function () {
+          VIEW_IDS.forEach(function (vid) {
+            panes[vid].classList.remove('yrxlsim-tab-active');
+            panes[vid].style.display = vid === id ? 'block' : 'none';
+          });
+          panes[id].classList.add('yrxlsim-tab-active');
+          wrapper.querySelectorAll('.yrxlsim-tab-btn').forEach(function (b) {
+            b.classList.toggle('yrxlsim-tab-active', b.getAttribute('data-view') === id);
+          });
+          var rest = VIEW_IDS.filter(function (x) { return x !== id; });
+          order[0] = id;
+          order[1] = rest[0];
+          order[2] = rest[1];
+          wrapper.setAttribute('data-yrxlsim-order', order.join(','));
+          updateOrderSelects();
+        });
+        tabsBar.appendChild(btn);
+      });
+      bar.appendChild(tabsBar);
+
+      wrapper.insertBefore(bar, wrapper.firstChild);
+      return bar;
+    }
+
+    ensureControlBar();
+    applyLayout();
+    wrapper.querySelector('.yrxlsim-layout-select').value = layoutMode;
+    var orderWrap = wrapper.querySelector('.yrxlsim-order-controls');
+    if (layoutMode === 'tabs') {
+      var first = order[0];
+      wrapper.querySelectorAll('.yrxlsim-tab-btn').forEach(function (b) {
+        b.classList.toggle('yrxlsim-tab-active', b.getAttribute('data-view') === first);
+      });
+    }
+    if (orderWrap) orderWrap.style.display = (layoutMode === 'stacked' || layoutMode === 'sidebyside') ? 'flex' : 'none';
+  }
+
+  function initViewSwitchers() {
+    if (typeof global.document === 'undefined' || !global.document.querySelectorAll) return;
+    global.document.querySelectorAll('.yrxlsim-wrapper').forEach(initViewSwitcher);
   }
 
   global.yrxlsim = {
@@ -608,13 +820,22 @@
   };
 
   function run() {
-    if (typeof global.jsyaml !== 'undefined') {
-      renderAll();
-    } else if (typeof global.YAML !== 'undefined') {
-      global.jsyaml = global.YAML;
-      renderAll();
-    } else if (typeof global.document !== 'undefined' && global.console && global.console.warn) {
-      global.console.warn('yrxlsim: YAML parser not found. Include js-yaml (e.g. from CDN or npm).');
+    if (typeof global.document === 'undefined') return;
+    function doRun() {
+      if (typeof global.jsyaml !== 'undefined') {
+        renderAll();
+      } else if (typeof global.YAML !== 'undefined') {
+        global.jsyaml = global.YAML;
+        renderAll();
+      } else if (global.console && global.console.warn) {
+        global.console.warn('yrxlsim: YAML parser not found. Include js-yaml (e.g. from CDN or npm).');
+      }
+      initViewSwitchers();
+    }
+    if (typeof global.setTimeout !== 'undefined') {
+      global.setTimeout(doRun, 0);
+    } else {
+      doRun();
     }
   }
   if (typeof global.document !== 'undefined') {

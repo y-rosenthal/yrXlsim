@@ -327,8 +327,8 @@ No single standard fits “row-based + sparse + formulas” perfectly. This form
 
 | Where | How |
 |-------|-----|
-| **Quarto (HTML)** | Put your YAML in a code block with class `yrxlsim` (e.g. ` ```{.yrxlsim}`). The book’s script replaces it with Formulas and Values tables in the browser. |
+| **Quarto (HTML)** | Put your YAML in a code block with class `yrxlsim` (e.g. ` ```{.yrxlsim}`). The book’s script replaces it with YAML source plus Formulas and Values tables and adds **view controls**: choose formulas only, values only, YAML only, tabs, stacked, or side-by-side layout, and (for stacked/side-by-side) the order of the three views. |
 | **CLI — ASCII** | Run `yrxlsim render file.yaml` (or `node bin/yrxlsim.js render file.yaml`). Use `--view formulas` or `--view values` for one view only. |
-| **CLI — HTML** | Run `yrxlsim render file.yaml --format html -o file.html` to get a standalone HTML file with bundled CSS and the same table styling. |
+| **CLI — HTML** | Run `yrxlsim render file.yaml --format html -o file.html` to get a self-contained HTML file with YAML source, Formulas, and Values and the same interactive view controls as in Quarto (bundled CSS and JavaScript). |
 
-The same JavaScript core (`quarto-book/resources/yrxlsim.js`) is used for Quarto and for the CLI; formula evaluation (HyperFormula) and `values` overrides behave the same everywhere.
+The same JavaScript core (`quarto-book/resources/yrxlsim.js`) is used for Quarto and for the CLI; formula evaluation (HyperFormula) and `values` overrides behave the same everywhere. View controls are implemented once in the core and apply in both Quarto-rendered pages and CLI-generated HTML.

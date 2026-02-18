@@ -52,6 +52,110 @@
   margin-bottom: 0.25em;
 }
 
+.yrxlsim-wrapper .yrxlsim-preview-yaml {
+  margin-top: 0.75em;
+}
+
+/* View controls — always first in flex order */
+.yrxlsim-controls {
+  margin-bottom: 0.75em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em 1em;
+  order: -1;
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.yrxlsim-layout-select {
+  font-size: 0.9em;
+  padding: 0.25em 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.yrxlsim-order-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1em;
+  align-items: center;
+}
+
+.yrxlsim-order-controls .yrxlsim-order-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.yrxlsim-order-controls label {
+  font-size: 0.85em;
+  color: #555;
+  white-space: nowrap;
+}
+
+.yrxlsim-order-controls .yrxlsim-order-select {
+  font-size: 0.85em;
+  padding: 0.2em 0.4em;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.yrxlsim-tabs-bar {
+  display: flex;
+  gap: 0.25em;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.yrxlsim-layout-tabs .yrxlsim-tabs-bar {
+  display: flex;
+}
+
+.yrxlsim-tab-btn {
+  font-size: 0.85em;
+  padding: 0.35em 0.75em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.yrxlsim-tab-btn:hover {
+  background: #eee;
+}
+
+.yrxlsim-tab-btn.yrxlsim-tab-active {
+  background: #e0e8f0;
+  border-color: #0066cc;
+  font-weight: 600;
+}
+
+/* Stacked: vertical order via flex */
+.yrxlsim-layout-stacked.yrxlsim-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.yrxlsim-layout-stacked .yrxlsim-preview {
+  flex: 0 0 auto;
+}
+
+/* Side-by-side: three columns */
+.yrxlsim-layout-sidebyside.yrxlsim-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+
+.yrxlsim-layout-sidebyside .yrxlsim-preview {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
 .yrxlsim-sheet {
   overflow-x: auto;
   border: 1px solid #d4d4d4;
