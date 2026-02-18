@@ -14,7 +14,7 @@
     "href": "index.html#how-to-use",
     "title": "Excel with yrXlsim",
     "section": "1.1 How to use",
-    "text": "1.1 How to use\nIn your .qmd file, write a code block and add the yrxlsim class. The block below is a live example — it is rendered by JavaScript into the table you see:\nversion: \"0.0.2\"\nrows:\n  - [\"Label\", \"Value\"]\n  - [\"Total\", \"=A2*2\"]\nThe source for that table is the YAML above (in a block with class yrxlsim). The YAML must follow the yrXlsim sheet format (see YAML-SPEC-v0.0.2.md). The next chapter shows more examples.",
+    "text": "1.1 How to use\nIn your .qmd file, write a code block and add the yrxlsim class. The block below is a live example — it is rendered by JavaScript into the table you see:\nversion: \"0.0.2\"\nrows:\n  - [\"Label\", \"Value\"]\n  - [\"Total\", \"=A2*2\"]\nThe source for that table is the YAML above (in a block with class yrxlsim). The YAML must follow the yrXlsim sheet format (see docs/YAML-SPEC-v0.0.2.md). The next chapter shows more examples.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
     ]
